@@ -14,6 +14,9 @@
 		BFD0EC001AB88F0800DA7424 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */; };
 		BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */; };
 		BFD0EC0F1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC0E1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m */; };
+		BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */; };
+		BFD0EC201AB88FDD00DA7424 /* MKOStandardFileLocator.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */; };
+		BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +43,12 @@
 		BFD0EC081AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MKONearbyFileRequestSampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFD0EC0D1AB88F0800DA7424 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFD0EC0E1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequestSampleTests.m; sourceTree = "<group>"; };
+		BFD0EC1A1AB88FDD00DA7424 /* MKOFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOFileLocator.h; sourceTree = "<group>"; };
+		BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKONearbyFileRequest.h; sourceTree = "<group>"; };
+		BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequest.m; sourceTree = "<group>"; };
+		BFD0EC1D1AB88FDD00DA7424 /* MKOStandardFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOStandardFileLocator.h; sourceTree = "<group>"; };
+		BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKOStandardFileLocator.m; sourceTree = "<group>"; };
+		BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "image-123456789.jpeg"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,9 +94,8 @@
 				BFD0EBF71AB88F0800DA7424 /* AppDelegate.m */,
 				BFD0EBF91AB88F0800DA7424 /* ViewController.h */,
 				BFD0EBFA1AB88F0800DA7424 /* ViewController.m */,
-				BFD0EBFC1AB88F0800DA7424 /* Main.storyboard */,
-				BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */,
-				BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */,
+				BFD0EC191AB88FDD00DA7424 /* MKONearbyFileRequest */,
+				BFD0EC181AB88FB200DA7424 /* Interface */,
 				BFD0EBF21AB88F0800DA7424 /* Supporting Files */,
 			);
 			path = MKONearbyFileRequestSample;
@@ -96,8 +104,10 @@
 		BFD0EBF21AB88F0800DA7424 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */,
 				BFD0EBF31AB88F0800DA7424 /* Info.plist */,
 				BFD0EBF41AB88F0800DA7424 /* main.m */,
+				BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -117,6 +127,27 @@
 				BFD0EC0D1AB88F0800DA7424 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		BFD0EC181AB88FB200DA7424 /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				BFD0EBFC1AB88F0800DA7424 /* Main.storyboard */,
+				BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */,
+			);
+			name = Interface;
+			sourceTree = "<group>";
+		};
+		BFD0EC191AB88FDD00DA7424 /* MKONearbyFileRequest */ = {
+			isa = PBXGroup;
+			children = (
+				BFD0EC1A1AB88FDD00DA7424 /* MKOFileLocator.h */,
+				BFD0EC1D1AB88FDD00DA7424 /* MKOStandardFileLocator.h */,
+				BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */,
+				BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */,
+				BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */,
+			);
+			path = MKONearbyFileRequest;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -200,6 +231,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFD0EBFE1AB88F0800DA7424 /* Main.storyboard in Resources */,
+				BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */,
 				BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */,
 				BFD0EC001AB88F0800DA7424 /* Images.xcassets in Resources */,
 			);
@@ -219,8 +251,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFD0EC201AB88FDD00DA7424 /* MKOStandardFileLocator.m in Sources */,
 				BFD0EBFB1AB88F0800DA7424 /* ViewController.m in Sources */,
 				BFD0EBF81AB88F0800DA7424 /* AppDelegate.m in Sources */,
+				BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */,
 				BFD0EBF51AB88F0800DA7424 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -412,6 +446,7 @@
 				BFD0EC141AB88F0800DA7424 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		BFD0EC151AB88F0800DA7424 /* Build configuration list for PBXNativeTarget "MKONearbyFileRequestSampleTests" */ = {
 			isa = XCConfigurationList;
@@ -420,6 +455,7 @@
 				BFD0EC171AB88F0800DA7424 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
