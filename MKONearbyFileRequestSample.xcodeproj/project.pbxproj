@@ -13,21 +13,10 @@
 		BFD0EBFE1AB88F0800DA7424 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EBFC1AB88F0800DA7424 /* Main.storyboard */; };
 		BFD0EC001AB88F0800DA7424 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */; };
 		BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */; };
-		BFD0EC0F1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC0E1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m */; };
 		BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */; };
 		BFD0EC201AB88FDD00DA7424 /* MKOStandardFileLocator.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */; };
 		BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		BFD0EC091AB88F0800DA7424 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFD0EBE71AB88F0800DA7424 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BFD0EBEE1AB88F0800DA7424;
-			remoteInfo = MKONearbyFileRequestSample;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		BFD0EBEF1AB88F0800DA7424 /* MKONearbyFileRequestSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MKONearbyFileRequestSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -40,9 +29,6 @@
 		BFD0EBFD1AB88F0800DA7424 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		BFD0EC021AB88F0800DA7424 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		BFD0EC081AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MKONearbyFileRequestSampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BFD0EC0D1AB88F0800DA7424 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BFD0EC0E1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequestSampleTests.m; sourceTree = "<group>"; };
 		BFD0EC1A1AB88FDD00DA7424 /* MKOFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOFileLocator.h; sourceTree = "<group>"; };
 		BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKONearbyFileRequest.h; sourceTree = "<group>"; };
 		BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequest.m; sourceTree = "<group>"; };
@@ -59,13 +45,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BFD0EC051AB88F0800DA7424 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -73,7 +52,6 @@
 			isa = PBXGroup;
 			children = (
 				BFD0EBF11AB88F0800DA7424 /* MKONearbyFileRequestSample */,
-				BFD0EC0B1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests */,
 				BFD0EBF01AB88F0800DA7424 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -82,7 +60,6 @@
 			isa = PBXGroup;
 			children = (
 				BFD0EBEF1AB88F0800DA7424 /* MKONearbyFileRequestSample.app */,
-				BFD0EC081AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,23 +85,6 @@
 				BFD0EBF31AB88F0800DA7424 /* Info.plist */,
 				BFD0EBF41AB88F0800DA7424 /* main.m */,
 				BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		BFD0EC0B1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests */ = {
-			isa = PBXGroup;
-			children = (
-				BFD0EC0E1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m */,
-				BFD0EC0C1AB88F0800DA7424 /* Supporting Files */,
-			);
-			path = MKONearbyFileRequestSampleTests;
-			sourceTree = "<group>";
-		};
-		BFD0EC0C1AB88F0800DA7424 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				BFD0EC0D1AB88F0800DA7424 /* Info.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -170,24 +130,6 @@
 			productReference = BFD0EBEF1AB88F0800DA7424 /* MKONearbyFileRequestSample.app */;
 			productType = "com.apple.product-type.application";
 		};
-		BFD0EC071AB88F0800DA7424 /* MKONearbyFileRequestSampleTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BFD0EC151AB88F0800DA7424 /* Build configuration list for PBXNativeTarget "MKONearbyFileRequestSampleTests" */;
-			buildPhases = (
-				BFD0EC041AB88F0800DA7424 /* Sources */,
-				BFD0EC051AB88F0800DA7424 /* Frameworks */,
-				BFD0EC061AB88F0800DA7424 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BFD0EC0A1AB88F0800DA7424 /* PBXTargetDependency */,
-			);
-			name = MKONearbyFileRequestSampleTests;
-			productName = MKONearbyFileRequestSampleTests;
-			productReference = BFD0EC081AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -199,10 +141,6 @@
 				TargetAttributes = {
 					BFD0EBEE1AB88F0800DA7424 = {
 						CreatedOnToolsVersion = 6.2;
-					};
-					BFD0EC071AB88F0800DA7424 = {
-						CreatedOnToolsVersion = 6.2;
-						TestTargetID = BFD0EBEE1AB88F0800DA7424;
 					};
 				};
 			};
@@ -220,7 +158,6 @@
 			projectRoot = "";
 			targets = (
 				BFD0EBEE1AB88F0800DA7424 /* MKONearbyFileRequestSample */,
-				BFD0EC071AB88F0800DA7424 /* MKONearbyFileRequestSampleTests */,
 			);
 		};
 /* End PBXProject section */
@@ -234,13 +171,6 @@
 				BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */,
 				BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */,
 				BFD0EC001AB88F0800DA7424 /* Images.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BFD0EC061AB88F0800DA7424 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,23 +189,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BFD0EC041AB88F0800DA7424 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				BFD0EC0F1AB88F0800DA7424 /* MKONearbyFileRequestSampleTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		BFD0EC0A1AB88F0800DA7424 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BFD0EBEE1AB88F0800DA7424 /* MKONearbyFileRequestSample */;
-			targetProxy = BFD0EC091AB88F0800DA7424 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		BFD0EBFC1AB88F0800DA7424 /* Main.storyboard */ = {
@@ -393,40 +307,6 @@
 			};
 			name = Release;
 		};
-		BFD0EC161AB88F0800DA7424 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = MKONearbyFileRequestSampleTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MKONearbyFileRequestSample.app/MKONearbyFileRequestSample";
-			};
-			name = Debug;
-		};
-		BFD0EC171AB88F0800DA7424 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = MKONearbyFileRequestSampleTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MKONearbyFileRequestSample.app/MKONearbyFileRequestSample";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -444,15 +324,6 @@
 			buildConfigurations = (
 				BFD0EC131AB88F0800DA7424 /* Debug */,
 				BFD0EC141AB88F0800DA7424 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		BFD0EC151AB88F0800DA7424 /* Build configuration list for PBXNativeTarget "MKONearbyFileRequestSampleTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BFD0EC161AB88F0800DA7424 /* Debug */,
-				BFD0EC171AB88F0800DA7424 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
