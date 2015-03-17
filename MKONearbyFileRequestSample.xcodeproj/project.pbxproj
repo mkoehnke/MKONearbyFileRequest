@@ -107,7 +107,8 @@
 				BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */,
 				BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */,
 			);
-			path = MKONearbyFileRequest;
+			name = MKONearbyFileRequest;
+			path = ../MKONearbyFileRequest;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
