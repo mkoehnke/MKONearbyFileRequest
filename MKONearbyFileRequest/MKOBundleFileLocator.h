@@ -1,5 +1,5 @@
 //
-//  MKOStandardFileLocator.h
+//  MKOBundleFileLocator.h
 //  MKOMultipeerFileRequest
 //
 //  Created by Mathias Köhnke on 16/03/15.
@@ -8,6 +8,6 @@
 
 #import "MKOFileLocator.h"
 
-@interface MKOStandardFileLocator : NSObject <MKOFileLocator>
+@interface MKOBundleFileLocator : NSObject <MKOFileLocator>
 
 @end

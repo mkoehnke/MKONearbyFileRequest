@@ -8,10 +8,13 @@
 
 #import "ViewController.h"
 #import "MKONearbyFileRequest.h"
-#import "MKOStandardFileLocator.h"
+#import "MKOBundleFileLocator.h"
 
-@interface ViewController () <MKONearbyFileRequestDelegate>
+static NSString * const kFileUUID = @"image-123456789.jpeg";
 
+@interface ViewController ()
+@property (nonatomic, strong) MKOProgressBlock progressBlock;
+@property (nonatomic, strong) MKOCompletionBlock completionBlock;
 @end
 
 @implementation ViewController
@@ -20,10 +23,11 @@
     [super viewDidLoad];
     
     NSString *displayName = [NSString stringWithFormat:@"User %d", arc4random() % 1000];
-    MKOStandardFileLocator *fileLocator = [MKOStandardFileLocator new];
-    self.fileRequest = [[MKONearbyFileRequest alloc] initWithDisplayName:displayName fileLocator:fileLocator uploadDelegate:self];
+    MKOBundleFileLocator *fileLocator = [MKOBundleFileLocator new];
+    [self setFileRequest:[[MKONearbyFileRequest alloc] initWithDisplayName:displayName fileLocator:fileLocator]];
+    [self.fileRequest setUploadProgressBlock:[self progressBlock]];
+    [self.fileRequest setUploadCompletionBlock:[self completionBlock]];
     [self.fileRequest startRequestListener];
-    
     [self setButtonIdle:YES];
 }
 
@@ -41,22 +45,24 @@
 
 - (void)didTouchSendButton
 {
-    NSString *uuid = @"image-123456789.jpeg";
     [self.imageView setImage:nil];
     [self setProgressIndeterminate:YES];
     [self setProgressHidden:NO];
-    [self.fileRequest requestNearbyFileWithUUID:uuid downloadDelegate:self];
+    [self.fileRequest requestNearbyFileWithUUID:kFileUUID progress:[self progressBlock] completion:[self completionBlock]];
     [self setButtonIdle:NO];
 }
 
 - (void)didTouchCancelButton
 {
-    NSLog(@"Cancel");
+    [self.fileRequest cancelRequest];
+    [self setProgressHidden:YES];
+    [self setButtonIdle:YES];
+    [self.sendButton setEnabled:YES];
 }
 
 - (void)setProgressHidden:(BOOL)hidden
 {
-    self.progressLabel.hidden = hidden;
+    [self.progressLabel setHidden:hidden];
     self.progressView.hidden = (hidden) ? YES : self.progressView.hidden;
     self.activityIndicator.hidden = (hidden) ? YES : self.activityIndicator.hidden;
     self.imageView.alpha = hidden ? 1. : .3;
@@ -69,33 +75,58 @@
     self.progressLabel.text = (indeterminate) ? @"Browsing for Nearby File" : @"0%";
 }
 
-#pragma mark - MKONearbyFileRequest Delegate
+#pragma mark - MKONearbyFileRequest Callbacks
 
-- (void)nearbyFileRequest:(MKONearbyFileRequest *)request didStartTransmissionOfFileWithName:(NSString *)fileName peerDisplayName:(NSString *)peerDisplayName
+- (MKOProgressBlock)progressBlock
 {
-    [self setProgressHidden:NO];
-    [self setProgressIndeterminate:NO];
-    [self.sendButton setEnabled:request.state == MKONearbyFileRequestStateDownloading];
-    [self.sendButton setBackgroundColor:(request.state == MKONearbyFileRequestStateDownloading) ? self.view.tintColor : [UIColor lightGrayColor]];
-}
-
-- (void)nearbyFileRequest:(MKONearbyFileRequest *)request didUpdateTransmissionProgress:(float)progress forFileWithName:(NSString *)fileName
-{
-    self.progressView.progress = progress;
-    self.progressLabel.text = [NSString stringWithFormat:@"%.01f%%", progress * 100];
-}
-
-- (void)nearbyFileRequest:(MKONearbyFileRequest *)request didFinishTransmissionOfFileWithName:(NSString *)fileName url:(NSURL *)url error:(NSError *)error
-{
-    [self setProgressHidden:YES];
-    [self setButtonIdle:YES];
-    [self.sendButton setEnabled:YES];
-    if (request.state == MKONearbyFileRequestStateDownloading && error == nil) {
-        NSData *data = [[NSFileManager defaultManager] contentsAtPath:[url path]];
-        UIImage *image = [UIImage imageWithData:data];
-        [self.imageView setImage:image];
-        [self.progressView setProgress:0];
+    if (!_progressBlock) {
+        ViewController * __weak weakSelf = self;
+        _progressBlock = ^void(MKONearbyFileRequest *fileRequest, NSString *fileName, float progress, BOOL indeterminate) {
+            if (progress == 0.0) {
+                [weakSelf setProgressHidden:NO];
+                [weakSelf setProgressIndeterminate:NO];
+                //[weakSelf.sendButton setEnabled:fileRequest.state == MKONearbyFileRequestStateDownloading];
+                //[weakSelf.sendButton setBackgroundColor:(fileRequest.state == MKONearbyFileRequestStateDownloading) ? weakSelf.view.tintColor : [UIColor lightGrayColor]];
+            } else {
+                weakSelf.progressView.progress = progress;
+                weakSelf.progressLabel.text = [NSString stringWithFormat:@"%.01f%%", progress * 100];
+            }
+        };
     }
+    return _progressBlock;
+}
+
+- (MKOCompletionBlock)completionBlock
+{
+    if (!_completionBlock) {
+        ViewController * __weak weakSelf = self;
+        _completionBlock =  ^void(MKONearbyFileRequest *fileRequest, NSString *fileName, NSURL *url, NSError *error) {
+            [weakSelf setProgressHidden:YES];
+            [weakSelf setButtonIdle:YES];
+            [weakSelf.sendButton setEnabled:YES];
+            
+            if (error == nil) {
+                if (fileRequest.state == MKONearbyFileRequestStateDownloading) {
+                    NSData *data = [[NSFileManager defaultManager] contentsAtPath:[url path]];
+                    UIImage *image = [UIImage imageWithData:data];
+                    [weakSelf.imageView setImage:image];
+                    [weakSelf.progressView setProgress:0];
+                }
+            } else {
+                [weakSelf showError:error];
+            }
+        };
+    }
+    return _completionBlock;
+}
+
+#pragma mark - Helper
+
+- (void)showError:(NSError *)error
+{
+    NSString *message = [NSString stringWithFormat:@"Could not transmit file: %@", error];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:message delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil];
+    [alert show];
 }
 
 @end

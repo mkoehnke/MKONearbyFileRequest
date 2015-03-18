@@ -14,7 +14,7 @@
 		BFD0EC001AB88F0800DA7424 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */; };
 		BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */; };
 		BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */; };
-		BFD0EC201AB88FDD00DA7424 /* MKOStandardFileLocator.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */; };
+		BFD0EC201AB88FDD00DA7424 /* MKOBundleFileLocator.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */; };
 		BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */; };
 /* End PBXBuildFile section */
 
@@ -32,8 +32,8 @@
 		BFD0EC1A1AB88FDD00DA7424 /* MKOFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOFileLocator.h; sourceTree = "<group>"; };
 		BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKONearbyFileRequest.h; sourceTree = "<group>"; };
 		BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequest.m; sourceTree = "<group>"; };
-		BFD0EC1D1AB88FDD00DA7424 /* MKOStandardFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOStandardFileLocator.h; sourceTree = "<group>"; };
-		BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKOStandardFileLocator.m; sourceTree = "<group>"; };
+		BFD0EC1D1AB88FDD00DA7424 /* MKOBundleFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOBundleFileLocator.h; sourceTree = "<group>"; };
+		BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKOBundleFileLocator.m; sourceTree = "<group>"; };
 		BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "image-123456789.jpeg"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -102,8 +102,8 @@
 			isa = PBXGroup;
 			children = (
 				BFD0EC1A1AB88FDD00DA7424 /* MKOFileLocator.h */,
-				BFD0EC1D1AB88FDD00DA7424 /* MKOStandardFileLocator.h */,
-				BFD0EC1E1AB88FDD00DA7424 /* MKOStandardFileLocator.m */,
+				BFD0EC1D1AB88FDD00DA7424 /* MKOBundleFileLocator.h */,
+				BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */,
 				BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */,
 				BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */,
 			);
@@ -182,7 +182,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BFD0EC201AB88FDD00DA7424 /* MKOStandardFileLocator.m in Sources */,
+				BFD0EC201AB88FDD00DA7424 /* MKOBundleFileLocator.m in Sources */,
 				BFD0EBFB1AB88F0800DA7424 /* ViewController.m in Sources */,
 				BFD0EBF81AB88F0800DA7424 /* AppDelegate.m in Sources */,
 				BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */,

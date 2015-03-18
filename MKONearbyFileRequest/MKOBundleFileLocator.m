@@ -1,14 +1,14 @@
 //
-//  MKOStandardFileLocator.m
+//  MKOBundleFileLocator.m
 //  MKOMultipeerFileRequest
 //
 //  Created by Mathias Köhnke on 16/03/15.
 //  Copyright (c) 2015 Mathias Koehnke. All rights reserved.
 //
 
-#import "MKOStandardFileLocator.h"
+#import "MKOBundleFileLocator.h"
 
-@implementation MKOStandardFileLocator
+@implementation MKOBundleFileLocator
 
 - (BOOL)fileExists:(NSString *)uuid
 {
