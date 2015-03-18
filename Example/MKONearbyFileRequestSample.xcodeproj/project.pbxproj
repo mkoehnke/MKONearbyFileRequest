@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF584C5C1ABA3D9B00F1E17F /* image-123456789.png in Resources */ = {isa = PBXBuildFile; fileRef = BF584C5B1ABA3D9B00F1E17F /* image-123456789.png */; };
 		BFD0EBF51AB88F0800DA7424 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EBF41AB88F0800DA7424 /* main.m */; };
 		BFD0EBF81AB88F0800DA7424 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EBF71AB88F0800DA7424 /* AppDelegate.m */; };
 		BFD0EBFB1AB88F0800DA7424 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EBFA1AB88F0800DA7424 /* ViewController.m */; };
@@ -15,10 +16,10 @@
 		BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */; };
 		BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */; };
 		BFD0EC201AB88FDD00DA7424 /* MKOBundleFileLocator.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */; };
-		BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BF584C5B1ABA3D9B00F1E17F /* image-123456789.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "image-123456789.png"; sourceTree = "<group>"; };
 		BFD0EBEF1AB88F0800DA7424 /* MKONearbyFileRequestSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MKONearbyFileRequestSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFD0EBF31AB88F0800DA7424 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFD0EBF41AB88F0800DA7424 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -34,7 +35,6 @@
 		BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequest.m; sourceTree = "<group>"; };
 		BFD0EC1D1AB88FDD00DA7424 /* MKOBundleFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOBundleFileLocator.h; sourceTree = "<group>"; };
 		BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKOBundleFileLocator.m; sourceTree = "<group>"; };
-		BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "image-123456789.jpeg"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +84,7 @@
 				BFD0EBFF1AB88F0800DA7424 /* Images.xcassets */,
 				BFD0EBF31AB88F0800DA7424 /* Info.plist */,
 				BFD0EBF41AB88F0800DA7424 /* main.m */,
-				BFD0EC211AB8BC7D00DA7424 /* image-123456789.jpeg */,
+				BF584C5B1ABA3D9B00F1E17F /* image-123456789.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -169,9 +169,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFD0EBFE1AB88F0800DA7424 /* Main.storyboard in Resources */,
-				BFD0EC221AB8BC7D00DA7424 /* image-123456789.jpeg in Resources */,
 				BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */,
 				BFD0EC001AB88F0800DA7424 /* Images.xcassets in Resources */,
+				BF584C5C1ABA3D9B00F1E17F /* image-123456789.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

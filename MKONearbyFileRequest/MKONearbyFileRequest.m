@@ -221,13 +221,15 @@ typedef NS_ENUM(NSUInteger, MKONearbyFileRequestRole){
         }
     } else if (state == MCSessionStateNotConnected) {
         NSLog(@"Peer %@ did disconnect from session.", peerID.displayName);
-        if (self.role == MKONearbyFileRequestRoleHost && self.progress.fractionCompleted < 1.) {
-            [self setCancelling:YES];
-            NSLog(@"It seems that peer %@ disconnected before the file was transmitted completely. Aborting ...", peerID.displayName);
-            NSString *uuid = self.discoveryInfos[peerID][kDiscoveryMetaKeyUUID];
-            NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.nearbyfilerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Connection to peer lost."}];
-            [self finishUploadWithURL:nil uuid:uuid peerID:peerID error:error];
-        }
+        
+        // TODO check: only finish upload action if the right peer disconnects
+//        if (self.role == MKONearbyFileRequestRoleHost && self.progress.fractionCompleted < 1.) {
+//            [self setCancelling:YES];
+//            NSLog(@"It seems that peer %@ disconnected before the file was transmitted completely. Aborting ...", peerID.displayName);
+//            NSString *uuid = self.discoveryInfos[peerID][kDiscoveryMetaKeyUUID];
+//            NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.nearbyfilerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Connection to peer lost."}];
+//            [self finishUploadWithURL:nil uuid:uuid peerID:peerID error:error];
+//        }
     } else if (state == MCSessionStateConnecting) {
         NSLog(@"Peer %@ will connect to session.", peerID.displayName);
     }

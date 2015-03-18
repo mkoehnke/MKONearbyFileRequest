@@ -10,7 +10,7 @@
 #import "MKONearbyFileRequest.h"
 #import "MKOBundleFileLocator.h"
 
-static NSString * const kFileUUID = @"image-123456789.jpeg";
+static NSString * const kFileUUID = @"image-123456789.png";
 
 @interface ViewController ()
 @property (nonatomic, strong) MKOProgressBlock progressBlock;
