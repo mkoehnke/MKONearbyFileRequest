@@ -11,27 +11,25 @@
 
 @class MKONearbyFileRequest;
 
+typedef NS_ENUM(NSUInteger, MKONearbyFileRequestOperationType){
+    MKONearbyFileRequestOperationTypeUpload = 0,
+    MKONearbyFileRequestOperationTypeDownload = 1
+};
+
+@interface MKONearbyFileRequestOperation : NSObject
+@property (nonatomic, readonly) MKONearbyFileRequestOperationType type;
+@property (nonatomic, strong, readonly) NSString *remotePeer;
+@property (nonatomic, strong, readonly) NSString *fileUUID;
+@property (nonatomic, strong, readonly) NSError *error;
+@property (nonatomic, readonly) NSProgress *progress;
+- (BOOL)isRunning;
+- (void)cancel;
+@end
+
+
 ///-----------------------------------
 /// @name Definitions
 ///-----------------------------------
-
-/**
- *  The state that indicates the current state of the file request.
- */
-typedef NS_ENUM(NSUInteger, MKONearbyFileRequestState){
-    /**
-     *  No Peer is connected and there's no download/upload in progress.
-     */
-    MKONearbyFileRequestStateIdle = 0,
-    /**
-     *  There's currently an upload in progress.
-     */
-    MKONearbyFileRequestStateUploading = 1,
-    /**
-     *  There's currently an download in progress.
-     */
-    MKONearbyFileRequestStateDownloading = 2
-};
 
 /**
  *  The progress callback that will be called if there's any progress activity during an upload or download.
@@ -41,7 +39,7 @@ typedef NS_ENUM(NSUInteger, MKONearbyFileRequestState){
  *  @param progress      The current progress.
  *  @param indeterminate Indicates if the progress is currently indeterminate.
  */
-typedef void(^MKOProgressBlock)(MKONearbyFileRequest *fileRequest, NSString *fileName, float progress, BOOL indeterminate);
+typedef void(^MKOProgressBlock)(MKONearbyFileRequestOperation *operation, float fractionCompleted, BOOL indeterminate);
 
 /**
  *  The completion callback that will be called if the download or upload operation has finished.
@@ -51,7 +49,7 @@ typedef void(^MKOProgressBlock)(MKONearbyFileRequest *fileRequest, NSString *fil
  *  @param url         The url pointing to a file that was uploaded or downloaded.
  *  @param error       Indicates that the operation was not successful.
  */
-typedef void(^MKOCompletionBlock)(MKONearbyFileRequest *fileRequest, NSString *fileName, NSURL *url, NSError *error);
+typedef void(^MKOCompletionBlock)(MKONearbyFileRequestOperation *operation, NSURL *url, NSError *error);
 
 /**
  *  The permission callback that will be called
@@ -61,7 +59,7 @@ typedef void(^MKOCompletionBlock)(MKONearbyFileRequest *fileRequest, NSString *f
  *
  *  @return <#return value description#>
  */
-typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequest *fileRequest, NSString *fileName);
+typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSString *fileUUID);
 
 
 
@@ -69,7 +67,6 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequest *fileRequest, NSString *f
 
 @property (nonatomic, strong, readonly) NSString *displayName;
 @property (nonatomic, strong, readonly) id<MKOFileLocator> fileLocator;
-@property (nonatomic, readonly) MKONearbyFileRequestState state;
 
 
 ///-----------------------------------
@@ -93,14 +90,11 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequest *fileRequest, NSString *f
 - (void)setUploadCompletionBlock:(MKOCompletionBlock)block;
 - (void)setUploadPermissionBlock:(MKOPermissionBlock)block;
 
-
 ///-----------------------------------
 /// @name Requesting methods
 ///-----------------------------------
-- (void)requestNearbyFileWithUUID:(NSString *)uuid
-                         progress:(MKOProgressBlock)progress
-                       completion:(MKOCompletionBlock)completion;
-- (void)cancelRequest;
-- (BOOL)requestInProgress;
+- (MKONearbyFileRequestOperation *)requestNearbyFileWithUUID:(NSString *)uuid
+                                                    progress:(MKOProgressBlock)progress
+                                                  completion:(MKOCompletionBlock)completion;
 
 @end

@@ -54,7 +54,7 @@ static NSString * const kFileUUID = @"image-123456789.png";
 
 - (void)didTouchCancelButton
 {
-    [self.fileRequest cancelRequest];
+    //[self.fileRequest cancelRequest];
     [self setProgressHidden:YES];
     [self setButtonIdle:YES];
     [self.sendButton setEnabled:YES];
@@ -81,7 +81,7 @@ static NSString * const kFileUUID = @"image-123456789.png";
 {
     if (!_progressBlock) {
         ViewController * __weak weakSelf = self;
-        _progressBlock = ^void(MKONearbyFileRequest *fileRequest, NSString *fileName, float progress, BOOL indeterminate) {
+        _progressBlock = ^void(MKONearbyFileRequestOperation *operation, float progress, BOOL indeterminate) {
             if (progress == 0.0) {
                 [weakSelf setProgressHidden:NO];
                 [weakSelf setProgressIndeterminate:NO];
@@ -100,13 +100,13 @@ static NSString * const kFileUUID = @"image-123456789.png";
 {
     if (!_completionBlock) {
         ViewController * __weak weakSelf = self;
-        _completionBlock =  ^void(MKONearbyFileRequest *fileRequest, NSString *fileName, NSURL *url, NSError *error) {
+        _completionBlock =  ^void(MKONearbyFileRequestOperation *operation, NSURL *url, NSError *error) {
             [weakSelf setProgressHidden:YES];
             [weakSelf setButtonIdle:YES];
             [weakSelf.sendButton setEnabled:YES];
             
             if (error == nil) {
-                if (fileRequest.state == MKONearbyFileRequestStateDownloading) {
+                if (operation.type == MKONearbyFileRequestOperationTypeDownload) {
                     NSData *data = [[NSFileManager defaultManager] contentsAtPath:[url path]];
                     UIImage *image = [UIImage imageWithData:data];
                     [weakSelf.imageView setImage:image];
