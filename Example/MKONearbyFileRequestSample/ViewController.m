@@ -15,6 +15,7 @@ static NSString * const kFileUUID = @"image-123456789.png";
 @interface ViewController ()
 @property (nonatomic, strong) MKOProgressBlock progressBlock;
 @property (nonatomic, strong) MKOCompletionBlock completionBlock;
+@property (nonatomic, strong) MKONearbyFileRequestOperation *operation;
 @end
 
 @implementation ViewController
@@ -45,16 +46,19 @@ static NSString * const kFileUUID = @"image-123456789.png";
 
 - (void)didTouchSendButton
 {
-    [self.imageView setImage:nil];
-    [self setProgressIndeterminate:YES];
-    [self setProgressHidden:NO];
-    [self.fileRequest requestNearbyFileWithUUID:kFileUUID progress:[self progressBlock] completion:[self completionBlock]];
-    [self setButtonIdle:NO];
+    self.operation = [self.fileRequest requestNearbyFileWithUUID:kFileUUID progress:[self progressBlock] completion:[self completionBlock]];
+    if (self.operation) {
+        [self.imageView setImage:nil];
+        [self setProgressIndeterminate:YES];
+        [self setProgressHidden:NO];
+        [self setButtonIdle:NO];
+    }
 }
 
 - (void)didTouchCancelButton
 {
     //[self.fileRequest cancelRequest];
+    [self.fileRequest cancel:self.operation];
     [self setProgressHidden:YES];
     [self setButtonIdle:YES];
     [self.sendButton setEnabled:YES];

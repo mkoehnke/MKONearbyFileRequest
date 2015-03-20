@@ -36,8 +36,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 @property (nonatomic, weak) id<MCNearbyServiceAdvertiserDelegate> advertiserDelegate;
 @property (nonatomic, getter=isRunning) BOOL running;
 - (void)start;
-- (void)finish;
-- (void)cancel;
+- (void)stop;
 @end
 
 @implementation MKONearbyFileRequestOperation
@@ -49,24 +48,15 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
     }
 }
 
-- (void)finish {
-    [self removeObserver:self forKeyPath:kProgressKeyPath];
+- (void)stop {
+    if (self.isRunning) { [self removeObserver:self forKeyPath:kProgressKeyPath]; }
     [self setRunning:NO];
-}
-
-- (void)cancel {
-    [self removeObserver:self forKeyPath:kProgressKeyPath];
-    [self setRunning:NO];
-    if (self.type == MKONearbyFileRequestOperationTypeDownload) {
-        [self stopAdvertiser];
-    }
-}
-
-- (void)cleanup {
-    [self removeObserver:self forKeyPath:kProgressKeyPath];
     [self setCompletionBlock:nil];
     [self setProgressBlock:nil];
     [self setProgress:nil];
+    if (self.type == MKONearbyFileRequestOperationTypeDownload) {
+        [self stopAdvertiser];
+    }
 }
 
 - (NSString *)remotePeer {
@@ -123,6 +113,9 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 // während ein download in progress ist, kann kein upload durchgeführt werden -> !!Browser ausschalten!!
 // wenn kein download in progress ist, können mehrere uploads gleichzeitig durchgeführt werden
 
+// Tests
+// - Invitation kommt nicht zurück
+
 @interface MKONearbyFileRequestOperationQueue : NSObject
 @property (nonatomic, strong) NSMutableArray *operations;
 @property (nonatomic, strong) NSTimer *operationTimer;
@@ -145,6 +138,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
     @synchronized (_operations) {
         if ([self canRun:operation]) {
             [_operations addObject:operation];
+            NSLog(@"Number of operations: %lu", (unsigned long)[_operations count]);
             return YES;
         }
         return NO;
@@ -155,6 +149,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
     @synchronized (_operations) {
         if (operation) {
             [_operations removeObject:operation];
+            NSLog(@"Remaining operations: %lu", (unsigned long)[_operations count]);
             return YES;
         }
         return NO;
@@ -176,7 +171,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
     return [self.operations filteredArrayUsingPredicate:predicate];
 }
 
-- (MKONearbyFileRequestOperation *)operationWithPeerID:(MCPeerID *)peerID {
+- (MKONearbyFileRequestOperation *)operation:(MKONearbyFileRequestOperationType)type withPeerID:(MCPeerID *)peerID {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"remotePeerID == %@", peerID];
     return [[self.operations filteredArrayUsingPredicate:predicate] firstObject];
 }
@@ -187,7 +182,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
         return [self operationsInQueue:MKONearbyFileRequestOperationTypeUpload].count == 0;
     } else if (operation.type == MKONearbyFileRequestOperationTypeUpload) {
         return ([self operationsInQueue:MKONearbyFileRequestOperationTypeDownload].count == 0 &&
-                [self operationWithPeerID:operation.remotePeerID] == nil);
+                [self operation:MKONearbyFileRequestOperationTypeUpload withPeerID:operation.remotePeerID] == nil);
     }
     return NO;
 }
@@ -197,6 +192,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
         [self operationsInQueue:MKONearbyFileRequestOperationTypeDownload].count > 0) {
         MKONearbyFileRequestOperation *operationToStart = [self operationsNotStarted:MKONearbyFileRequestOperationTypeDownload].firstObject;
         [operationToStart start];
+        NSLog(@"Operation: %@ started.", operationToStart);
     }
 }
 
@@ -255,6 +251,16 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
     return self;
 }
 
+- (void)cancel:(MKONearbyFileRequestOperation *)request {
+    [request stop];
+    [self.operationQueue removeOperation:request];
+    [self.session disconnect];
+}
+
+- (BOOL)isRunning:(MKONearbyFileRequestOperation *)request {
+    return request.isRunning;
+}
+
 - (void)startRequestListener {
     [self.operationQueue startObserver];
     [self.browser startBrowsingForPeers];
@@ -276,13 +282,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
     downloadOperation.advertiserDelegate = self;
     downloadOperation.localPeerID = self.peerID;
     if ([self.operationQueue addOperation:downloadOperation] == NO) {
-        NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999
-                                         userInfo:@{NSLocalizedDescriptionKey : @"Could not start request."}];
-        [downloadOperation setError:error];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            downloadOperation.completionBlock(downloadOperation, nil, downloadOperation.error);
-            [downloadOperation cleanup];
-        });
+        return nil;
     }
     return downloadOperation;
 }
@@ -296,10 +296,9 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 - (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didNotStartAdvertisingPeer:(NSError *)error {
     MKONearbyFileRequestOperation *currentDownloadOperation = [self currentDownloadOperation];
     [currentDownloadOperation setError:error];
-    [currentDownloadOperation cancel];
     dispatch_async(dispatch_get_main_queue(), ^{
         currentDownloadOperation.completionBlock(currentDownloadOperation, nil, currentDownloadOperation.error);
-        [currentDownloadOperation cleanup];
+        [currentDownloadOperation stop];
         [self.operationQueue removeOperation:currentDownloadOperation];
     });
 }
@@ -333,8 +332,6 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 - (void)browser:(MCNearbyServiceBrowser *)browser foundPeer:(MCPeerID *)peerID withDiscoveryInfo:(NSDictionary *)info {
     NSLog(@"Found peer: %@ with info: %@", peerID.displayName, info);
     if ([info[kDiscoveryMetaKeyType] isEqualToString:kDiscoveryMetaKeyTypeTransmission]) {
-        NSLog(@"DiscoveryType: Transmission");
-        
         NSString *uuid = info[kDiscoveryMetaKeyUUID];
         NSLog(@"Lookup file with uuid: %@", uuid);
         BOOL fileExists = [self.fileLocator fileExists:uuid];
@@ -369,11 +366,22 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 }
 
 - (void)browser:(MCNearbyServiceBrowser *)browser lostPeer:(MCPeerID *)peerID {
-    NSLog(@"Peer lost: %@", peerID.displayName);
-
-    //TODO handle browser loses peer -> check if peer was connected
-    
-    //TODO cancelling state -> multiple peers
+    NSLog(@"Peer %@ stopped advertising.", peerID.displayName);
+    /** Check if remote peer is already connected to this session. If yes, we don't handle a
+        connection loss here. We wait for the peer to change the state to disconnected. **/
+    if ([self.session.connectedPeers containsObject:peerID] == NO) {
+        NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999
+                                         userInfo:@{NSLocalizedDescriptionKey : @"Connection to peer lost."}];
+        MKONearbyFileRequestOperation *uploadOperation = [self.operationQueue operation:MKONearbyFileRequestOperationTypeUpload withPeerID:peerID];
+        if (uploadOperation) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [uploadOperation setError:error];
+                uploadOperation.completionBlock(uploadOperation, nil, uploadOperation.error);
+                [uploadOperation stop];
+                [self.operationQueue removeOperation:uploadOperation];
+            });
+        }
+    }
 }
 
 
@@ -382,7 +390,7 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 - (void)session:(MCSession *)session peer:(MCPeerID *)peerID didChangeState:(MCSessionState)state {
     if (state == MCSessionStateConnected) {
         NSLog(@"Peer %@ did connect to session.", peerID.displayName);
-        MKONearbyFileRequestOperation *uploadOperation = [self.operationQueue operationWithPeerID:peerID];
+        MKONearbyFileRequestOperation *uploadOperation = [self.operationQueue operation:MKONearbyFileRequestOperationTypeUpload withPeerID:peerID];
         if (uploadOperation.type == MKONearbyFileRequestOperationTypeUpload) {
             
             /** Sending file to connected Peer **/
@@ -394,29 +402,31 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
                 });
             }
             uploadOperation.progress = [self.session sendResourceAtURL:fileToSend withName:uploadOperation.fileUUID toPeer:peerID withCompletionHandler:^(NSError *error) {
-                NSLog(@"Sending completed: %@", error);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (self.uploadCompletionBlock) {
-                        self.uploadCompletionBlock(uploadOperation, fileToSend, error);
-                    }
-                    [uploadOperation cleanup];
-                });
+                [self finishUploadWithOperation:uploadOperation url:fileToSend error:error];
             }];
         }
     } else if (state == MCSessionStateNotConnected) {
         NSLog(@"Peer %@ did disconnect from session.", peerID.displayName);
-        
-        // TODO check: only finish upload action if the right peer disconnects
-//        if (self.role == MKONearbyFileRequestRoleHost && self.progress.fractionCompleted < 1.) {
-//            [self setCancelling:YES];
-//            NSLog(@"It seems that peer %@ disconnected before the file was transmitted completely. Aborting ...", peerID.displayName);
-//            NSString *uuid = self.discoveryInfos[peerID][kDiscoveryMetaKeyUUID];
-//            NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.nearbyfilerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Connection to peer lost."}];
-//            [self finishUploadWithURL:nil uuid:uuid peerID:peerID error:error];
-//        }
+        MKONearbyFileRequestOperation *uploadOperation = [self.operationQueue operation:MKONearbyFileRequestOperationTypeUpload withPeerID:peerID];
+        if (uploadOperation && uploadOperation.progress.fractionCompleted < 1.) {
+            NSLog(@"It seems that peer %@ disconnected before the file was transmitted completely. Aborting ...", peerID.displayName);
+            NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.nearbyfilerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Connection to peer lost."}];
+            [self finishUploadWithOperation:uploadOperation url:nil error:error];
+        }
     } else if (state == MCSessionStateConnecting) {
         NSLog(@"Peer %@ will connect to session.", peerID.displayName);
     }
+}
+
+- (void)finishUploadWithOperation:(MKONearbyFileRequestOperation *)operation url:(NSURL *)url error:(NSError *)error {
+    NSLog(@"Sending completed: %@", error);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.uploadCompletionBlock) {
+            self.uploadCompletionBlock(operation, url, error);
+        }
+        [operation stop];
+        [self.operationQueue removeOperation:operation];
+    });
 }
 
 - (void)session:(MCSession *)session didStartReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID withProgress:(NSProgress *)progress {
@@ -436,9 +446,10 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 
     MKONearbyFileRequestOperation *currentDownloadOperation = [self currentDownloadOperation];
     __block MKOCompletionBlock completion = currentDownloadOperation.completionBlock;
-    [currentDownloadOperation cleanup];
+    [currentDownloadOperation stop];
+    [self.operationQueue removeOperation:currentDownloadOperation];
     dispatch_async(dispatch_get_main_queue(), ^{
-        completion(currentDownloadOperation, localURL, error);
+        if (completion) completion(currentDownloadOperation, localURL, error);
         completion = nil;
     });
 }
@@ -464,8 +475,8 @@ static NSString *kProgressKeyPath = @"progress.fractionCompleted";
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     @synchronized(_askPermissionCompletionBlocks) {
         MKOAskPermissionBlock completion = [_askPermissionCompletionBlocks firstObject];
-        completion(buttonIndex == 1);
         [_askPermissionCompletionBlocks removeObjectAtIndex:0];
+        completion(buttonIndex == 1);
         completion = nil;
     }
 }

@@ -22,8 +22,6 @@ typedef NS_ENUM(NSUInteger, MKONearbyFileRequestOperationType){
 @property (nonatomic, strong, readonly) NSString *fileUUID;
 @property (nonatomic, strong, readonly) NSError *error;
 @property (nonatomic, readonly) NSProgress *progress;
-- (BOOL)isRunning;
-- (void)cancel;
 @end
 
 
@@ -96,5 +94,6 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSSt
 - (MKONearbyFileRequestOperation *)requestNearbyFileWithUUID:(NSString *)uuid
                                                     progress:(MKOProgressBlock)progress
                                                   completion:(MKOCompletionBlock)completion;
-
+- (void)cancel:(MKONearbyFileRequestOperation *)request;
+- (BOOL)isRunning:(MKONearbyFileRequestOperation *)request;
 @end
