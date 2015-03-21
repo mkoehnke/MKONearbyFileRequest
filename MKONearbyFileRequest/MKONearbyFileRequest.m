@@ -123,13 +123,6 @@ static NSString * const kProgressKeyPath                    = @"progress.fractio
 /// @name MKONearbyFileRequestOperationQueue
 ///--------------------------------------------------
 
-// Notes
-// während ein download in progress ist, kann kein upload durchgeführt werden -> !!Browser ausschalten!!
-// wenn kein download in progress ist, können mehrere uploads gleichzeitig durchgeführt werden
-
-// Tests
-// - bevor Download gestartet wird bricht die Verbindung ab
-
 @interface MKONearbyFileRequestOperationQueue : NSObject
 @property (nonatomic, strong) NSMutableArray *operations;
 @property (nonatomic, strong) NSTimer *operationTimer;
