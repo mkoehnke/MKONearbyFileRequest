@@ -23,7 +23,27 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+ *  MKOFileLocator
+ */
 @protocol MKOFileLocator <NSObject>
+
+/**
+ *  The implementation of this method determines if a file with a given uuid
+ *  exists on the local device.
+ *
+ *  @param uuid a file uuid
+ *
+ *  @return returns 'YES' if the file exists on the local machine
+ */
 - (BOOL)fileExists:(NSString *)uuid;
+
+/**
+ *  The implementation of this method returns a path to a file with a given uuid.
+ *
+ *  @param uuid a file uuid
+ *
+ *  @return returns a NSURL if the file exists, otherwise 'nil'.
+ */
 - (NSURL *)fileWithUUID:(NSString *)uuid;
 @end

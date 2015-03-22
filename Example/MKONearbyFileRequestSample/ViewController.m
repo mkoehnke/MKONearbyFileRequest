@@ -25,7 +25,8 @@
 #import "MKONearbyFileRequest.h"
 #import "MKOBundleFileLocator.h"
 
-static NSString * const kFileUUID = @"image-123456789.png";
+static NSString * const kFileUUID           = @"image-123456789.png";
+static NSString * const kRemotePeerKeyPath  = @"operation.remotePeer";
 
 @interface ViewController ()
 @property (nonatomic, strong) MKOProgressBlock progressBlock;
@@ -61,6 +62,7 @@ static NSString * const kFileUUID = @"image-123456789.png";
 - (void)didTouchSendButton {
     self.operation = [self.fileRequest requestFile:kFileUUID progress:[self progressBlock] completion:[self completionBlock]];
     if (self.operation) {
+        [self addObserver:self forKeyPath:kRemotePeerKeyPath options:0 context:nil];
         [self.imageView setImage:nil];
         [self setProgressIndeterminate:YES];
         [self setProgressHidden:NO];
@@ -93,8 +95,8 @@ static NSString * const kFileUUID = @"image-123456789.png";
 - (MKOProgressBlock)progressBlock {
     if (!_progressBlock) {
         ViewController * __weak weakSelf = self;
-        _progressBlock = ^void(MKONearbyFileRequestOperation *operation, float progress, BOOL indeterminate) {
-            if (progress == 0.0) {
+        _progressBlock = ^void(MKONearbyFileRequestOperation *operation, float progress) {
+            if (progress > 0. && progress <= 0.1) {
                 [weakSelf setProgressHidden:NO];
                 [weakSelf setProgressIndeterminate:NO];
             } else {
@@ -113,6 +115,7 @@ static NSString * const kFileUUID = @"image-123456789.png";
             [weakSelf setProgressHidden:YES];
             [weakSelf setButtonIdle:YES];
             [weakSelf.sendButton setEnabled:YES];
+            if (weakSelf.operation) [weakSelf removeObserver:weakSelf forKeyPath:kRemotePeerKeyPath];
             
             if (error == nil) {
                 if (operation.type == MKONearbyFileRequestOperationTypeDownload) {
@@ -132,9 +135,21 @@ static NSString * const kFileUUID = @"image-123456789.png";
 #pragma mark - Helper
 
 - (void)showError:(NSError *)error {
-    NSString *message = [NSString stringWithFormat:@"Could not transmit file: %@", error];
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:message delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil];
+    NSString *message = [NSString stringWithFormat:@"Could not transmit file.\n%@", [error localizedDescription]];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Sorry" message:message delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil];
     [alert show];
 }
+
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if ([keyPath isEqualToString:kRemotePeerKeyPath]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.progressLabel.text = [NSString stringWithFormat:@"Found %@ for downloading file.", self.operation.remotePeer];
+        });
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
 
 @end

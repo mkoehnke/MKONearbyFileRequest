@@ -44,7 +44,7 @@ typedef NS_ENUM(NSUInteger, MKONearbyFileRequestOperationType){
  *  @param progress      The current progress.
  *  @param indeterminate Indicates if the progress is currently indeterminate.
  */
-typedef void(^MKOProgressBlock)(MKONearbyFileRequestOperation *operation, float fractionCompleted, BOOL indeterminate);
+typedef void(^MKOProgressBlock)(MKONearbyFileRequestOperation *operation, float progress);
 
 /**
  *  The completion callback that will be called if the download or upload operation has finished.
@@ -76,7 +76,7 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSSt
 @property (nonatomic, strong, readonly) NSString *remotePeer;
 @property (nonatomic, strong, readonly) NSString *fileUUID;
 @property (nonatomic, strong, readonly) NSError *error;
-@property (nonatomic, strong, readonly) NSProgress *progress;
+@property (nonatomic, readonly) float progress;
 - (void)cancel;
 - (BOOL)isRunning;
 @end

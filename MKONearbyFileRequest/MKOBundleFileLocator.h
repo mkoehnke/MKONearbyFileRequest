@@ -23,6 +23,10 @@
 
 #import "MKOFileLocator.h"
 
+/**
+ *  Implements the MKOFileLocator Protocol. Determines if a specific file
+ *  exists in the local bundle.
+ */
 @interface MKOBundleFileLocator : NSObject <MKOFileLocator>
 
 @end
