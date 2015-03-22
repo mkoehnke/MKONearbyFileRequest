@@ -285,7 +285,18 @@ static NSString * const kProgressKeyPath                    = @"progress.fractio
     [self.session disconnect];
 }
 
-#pragma mark - Upload Progress
+#pragma mark - Upload Blocks
+
+- (void)setUploadCompletionBlock:(MKOCompletionBlock)block
+{
+    MKONearbyFileRequest * __weak weakSelf = self;
+    _uploadCompletionBlock = ^(MKONearbyFileRequestOperation *operation, NSURL *url, NSError *error) {
+        @synchronized (weakSelf) {
+            NSArray *operations = [weakSelf.operationQueue operationsInProgress:MKONearbyFileRequestOperationTypeUpload fileUUID:operation.fileUUID];
+            if (operations.count == 1 && block) block(operation, url, error);
+        }
+    };
+}
 
 - (void)setUploadProgressBlock:(MKOProgressBlock)block
 {
