@@ -37,8 +37,6 @@ static NSString * const kDiscoveryMetaKeyType               = @"discovery-type";
 static NSString * const kDiscoveryMetaKeyTypeTransmission   = @"discovery-type-transmission";
 static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 
-static NSString * const kProgressKeyPath                    = @"processing.fractionCompleted";
-
 ///--------------------------------------------------
 /// @name MKONearbyFileRequestOperation
 ///--------------------------------------------------
@@ -69,7 +67,6 @@ static NSString * const kProgressKeyPath                    = @"processing.fract
 
 @implementation MKONearbyFileRequestOperation
 - (void)start {
-    [self addObserver:self forKeyPath:kProgressKeyPath options:0 context:nil];
     [self setRunning:YES];
     if (self.type == MKONearbyFileRequestOperationTypeDownload) {
         [self.delegate operationWantsToStartAdvertiser:self];
@@ -77,7 +74,10 @@ static NSString * const kProgressKeyPath                    = @"processing.fract
 }
 
 - (void)stop {
-    if (self.isRunning) { [self removeObserver:self forKeyPath:kProgressKeyPath]; }
+    @try {
+        [self.processing removeObserver:self forKeyPath:NSStringFromSelector(@selector(fractionCompleted))];
+    }
+    @catch (NSException * __unused exception) {}
     [self setRunning:NO];
     [self setCompletionBlock:nil];
     [self setProgressBlock:nil];
@@ -97,6 +97,11 @@ static NSString * const kProgressKeyPath                    = @"processing.fract
     [self didChangeValueForKey:@"remotePeer"];
 }
 
+- (void)setProcessing:(NSProgress *)processing {
+    _processing = processing;
+    [_processing addObserver:self forKeyPath:NSStringFromSelector(@selector(fractionCompleted)) options:0 context:nil];
+}
+
 - (NSString *)remotePeer {
     return self.remotePeerID.displayName;
 }
@@ -113,7 +118,7 @@ static NSString * const kProgressKeyPath                    = @"processing.fract
 #pragma mark - Progress
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:kProgressKeyPath]) {
+    if ([keyPath isEqualToString:NSStringFromSelector(@selector(fractionCompleted))]) {
         NSLog(@"fractionCompleted: %f", self.processing.fractionCompleted);
         dispatch_async(dispatch_get_main_queue(), ^{
             self.progress = self.processing.fractionCompleted;

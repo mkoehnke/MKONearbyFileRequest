@@ -26,7 +26,6 @@
 #import "MKOBundleFileLocator.h"
 
 static NSString * const kFileUUID           = @"image-123456789.png";
-static NSString * const kRemotePeerKeyPath  = @"operation.remotePeer";
 
 @interface ViewController ()
 @property (nonatomic, strong) MKOProgressBlock progressBlock;
@@ -62,7 +61,7 @@ static NSString * const kRemotePeerKeyPath  = @"operation.remotePeer";
 - (void)didTouchSendButton {
     self.operation = [self.fileRequest requestFile:kFileUUID progress:[self progressBlock] completion:[self completionBlock]];
     if (self.operation) {
-        [self addObserver:self forKeyPath:kRemotePeerKeyPath options:0 context:nil];
+        [self.operation addObserver:self forKeyPath:NSStringFromSelector(@selector(remotePeer)) options:0 context:nil];
         [self.imageView setImage:nil];
         [self setProgressIndeterminate:YES];
         [self setProgressHidden:NO];
@@ -115,7 +114,10 @@ static NSString * const kRemotePeerKeyPath  = @"operation.remotePeer";
             [weakSelf setProgressHidden:YES];
             [weakSelf setButtonIdle:YES];
             [weakSelf.sendButton setEnabled:YES];
-            if (weakSelf.operation) [weakSelf removeObserver:weakSelf forKeyPath:kRemotePeerKeyPath];
+            @try {
+                [weakSelf.operation removeObserver:weakSelf forKeyPath:NSStringFromSelector(@selector(remotePeer))];
+            }
+            @catch (NSException * __unused exception) {}
             
             if (error == nil) {
                 if (operation.type == MKONearbyFileRequestOperationTypeDownload) {
@@ -142,7 +144,7 @@ static NSString * const kRemotePeerKeyPath  = @"operation.remotePeer";
 
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:kRemotePeerKeyPath]) {
+    if ([keyPath isEqualToString:NSStringFromSelector(@selector(remotePeer))]) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.progressLabel.text = [NSString stringWithFormat:@"Found %@ for downloading file.", self.operation.remotePeer];
         });
