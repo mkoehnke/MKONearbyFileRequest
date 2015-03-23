@@ -24,7 +24,8 @@
 #import <Foundation/Foundation.h>
 
 /**
- *  MKOFileLocator
+ *  The implementation of this protocol is responsible for finding a specific
+ *  file by it's unique identifier.
  */
 @protocol MKOFileLocator <NSObject>
 

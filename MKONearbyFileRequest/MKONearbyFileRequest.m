@@ -54,7 +54,6 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 @property (nonatomic) MKONearbyFileRequestOperationType type;
 @property (nonatomic, strong) MCPeerID *remotePeerID;
 @property (nonatomic, strong) NSString *fileUUID;
-@property (nonatomic, strong) NSError *error;
 @property (nonatomic, strong) NSProgress *processing;
 @property (nonatomic, strong) MKOProgressBlock progressBlock;
 @property (nonatomic, strong) MKOCompletionBlock completionBlock;
@@ -366,9 +365,8 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 
 - (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didNotStartAdvertisingPeer:(NSError *)error {
     MKONearbyFileRequestOperation *currentDownloadOperation = [self currentDownloadOperation];
-    [currentDownloadOperation setError:error];
     dispatch_async(dispatch_get_main_queue(), ^{
-        currentDownloadOperation.completionBlock(currentDownloadOperation, nil, currentDownloadOperation.error);
+        currentDownloadOperation.completionBlock(currentDownloadOperation, nil, error);
         [currentDownloadOperation stop];
         [self.operationQueue removeOperation:currentDownloadOperation];
     });
@@ -449,8 +447,8 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
         MKONearbyFileRequestOperation *uploadOperation = [self.operationQueue operation:MKONearbyFileRequestOperationTypeUpload withPeerID:peerID];
         if (uploadOperation) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [uploadOperation setError:error];
-                uploadOperation.completionBlock(uploadOperation, nil, uploadOperation.error);
+                if (uploadOperation.completionBlock)
+                    uploadOperation.completionBlock(uploadOperation, nil, error);
                 [uploadOperation stop];
                 [self.operationQueue removeOperation:uploadOperation];
             });
