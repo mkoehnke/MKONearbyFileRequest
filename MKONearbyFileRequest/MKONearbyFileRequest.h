@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "MKOFileLocator.h"
+#import "MKOBundleFileLocator.h"
 
 @class MKONearbyFileRequest;
 @class MKONearbyFileRequestOperation;
