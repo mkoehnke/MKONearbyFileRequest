@@ -13,14 +13,14 @@ Add the **MultipeerConnectivity.framework** to your target's *Linked Frameworks 
 ### Objective-C
 Import the following header file to the class where you like to use it: 
 
-```
+```objective-c
 #import "MKONearbyFileRequest.h"
 ```
 ### Swift
 1. To import Objective-C files to your Swift project, you rely on an *Objective-C bridging header* to expose those files to Swift. Xcode offers to create this header file when you add the *MKONearbyFileRequest* files to your existing Swift app.<br />Alternatively, you can create a bridging header yourself by choosing File > New > File > iOS > Source > Header File and name it *projectname-bridging-header.h*.
 2. In your Objective-C bridging header file, import the following header file:
 
-	```
+	```objective-c
 	#import "MKONearbyFileRequest.h"
 	```
 3. Under Build Settings, make sure the Objective-C Bridging Header build setting under Swift Compiler - Code Generation has a path to the header.
@@ -29,20 +29,20 @@ The path should be relative to your project, similar to the way your Info.plist 
 # Usage
 
 ## Setup
-```
+```objective-c
 MKOBundleFileLocator *fileLocator = [MKOBundleFileLocator new];
 MKONearbyFileRequest *fileRequest = [[MKONearbyFileRequest alloc] initWithDisplayName:displayName fileLocator:fileLocator];
 [fileRequest startRequestListener];
 ```
 There's currently one implementation of the MKOFilelocator protocol available, which can locate a file in the local bundle. You can simply create your own file locator (e.g. looking up files in your database or file system) by implementing the following methods:
 
-```
+```objective-c
 - (BOOL)fileExists:(NSString *)uuid;
 - (NSURL *)fileWithUUID:(NSString *)uuid;
 ```
 
 ## Start Request
-```
+```objective-c
 MKONearbyFileRequestOperation *operation = [fileRequest requestFile:@"image.jpg" 
   progress:^(MKONearbyFileRequestOperation *operation, float progress) {
     // show progress in UI
@@ -56,7 +56,7 @@ MKONearbyFileRequestOperation *operation = [fileRequest requestFile:@"image.jpg"
 ```
 
 ## Cancel Request
-```
+```objective-c
 [operation cancel];
 ```
 
