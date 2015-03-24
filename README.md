@@ -43,7 +43,7 @@ There's currently one implementation of the MKOFilelocator protocol available, w
 
 ## Start Request
 ```objective-c
-MKONearbyFileRequestOperation *operation = [fileRequest requestFile:@"image.jpg" 
+MKONearbyFileRequestOperation *operation = [fileRequest requestFile:@"image-123456789.jpg" 
   progress:^(MKONearbyFileRequestOperation *operation, float progress) {
     // show progress in UI
   } 
