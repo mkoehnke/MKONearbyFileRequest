@@ -239,7 +239,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 /// @name MKONearbyFileRequest
 ///--------------------------------------------------
 
-@interface MKONearbyFileRequest () <MCSessionDelegate, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate, UIAlertViewDelegate, MKONearbyFileRequestOperationDelegate>
+@interface MKONearbyFileRequest () <MCSessionDelegate, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate, UIAlertViewDelegate, MKONearbyFileRequestOperationDelegate, NSFileManagerDelegate>
 @property (nonatomic, strong) MCPeerID *peerID;
 @property (nonatomic, strong) MCSession *session;
 @property (nonatomic, strong) MCNearbyServiceAdvertiser *advertiser;
@@ -253,6 +253,8 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 @property (nonatomic, strong) MKOPermissionBlock uploadPermissionBlock;
 
 @property (nonatomic, strong) NSMutableArray *askPermissionCompletionBlocks;
+
+@property (nonatomic, strong) NSFileManager *fileManager;
 @end
 
 @implementation MKONearbyFileRequest
@@ -277,6 +279,9 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
         _fileLocator = fileLocator;
         _operationQueue = [MKONearbyFileRequestOperationQueue new];
         _askPermissionCompletionBlocks = [NSMutableArray array];
+        
+        _fileManager = [NSFileManager new];
+        _fileManager.delegate = self;
     }
     return self;
 }
@@ -521,10 +526,41 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
     __block MKOCompletionBlock completion = currentDownloadOperation.completionBlock;
     [currentDownloadOperation stop];
     [self.operationQueue removeOperation:currentDownloadOperation];
+    
+    NSURL *permanentLocation;
+    if (error == nil) {
+        /** Movie file to permanent location **/
+        permanentLocation = [self moveFileWithName:resourceName toPermanentLocationFromTemporaryLocation:localURL];
+        if (permanentLocation == nil) {
+            error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
+        }
+    }
+    
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (completion) completion(currentDownloadOperation, localURL, error);
+        if (completion) completion(currentDownloadOperation, permanentLocation, error);
         completion = nil;
     });
+}
+
+#pragma mark  - NSFileManager
+
+- (NSURL *)moveFileWithName:(NSString *)fileName toPermanentLocationFromTemporaryLocation:(NSURL *)temporaryLocation {
+    
+    NSURL *documentsFolder = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSString *permanentPath = [documentsFolder.path stringByAppendingPathComponent:fileName];
+    NSURL *permanentLocation = [NSURL fileURLWithPath:permanentPath];
+    NSError *moveFileError;
+    NSLog(@"Moving file %@ from %@ to permanent location ... ", fileName, temporaryLocation);
+    [self.fileManager moveItemAtURL:temporaryLocation toURL:permanentLocation error:&moveFileError];
+    if (moveFileError) {
+        NSLog(@"Could not move file to permanent location: %@", [moveFileError localizedDescription]);
+        return nil;
+    }
+    return permanentLocation;
+}
+
+-(BOOL)fileManager:(NSFileManager *)fileManager shouldProceedAfterError:(NSError *)error movingItemAtURL:(NSURL *)srcURL toURL:(NSURL *)dstURL {
+    return ([error code] == NSFileWriteFileExistsError);
 }
 
 - (void)session:(MCSession *)session didReceiveStream:(NSInputStream *)stream withName:(NSString *)streamName fromPeer:(MCPeerID *)peerID { }
