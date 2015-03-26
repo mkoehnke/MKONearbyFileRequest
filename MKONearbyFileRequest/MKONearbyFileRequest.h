@@ -102,7 +102,7 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSSt
 /**
  *  Determines if the operation has been started or not (still in the queue).
  */
-@property (nonatomic, readonly) BOOL isRunning;
+@property (nonatomic, readonly, getter=isRunning) BOOL running;
 /**
  *  Cancels this operation and aborts the file upload/download.
  */
@@ -177,7 +177,8 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSSt
 /**
  *  Starts a request to download a file from a nearby peer.
  *  Note: The downloaded file will be moved from the temporary folder 
- *  to the documents folder.
+ *  to the documents folder. If the file already exists, it will
+ *  be overwritten.
  *
  *  @param uuid       The file unique identifier.
  *  @param progress   The progress block.
