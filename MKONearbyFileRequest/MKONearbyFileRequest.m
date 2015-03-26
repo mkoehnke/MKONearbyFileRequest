@@ -521,10 +521,32 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
     __block MKOCompletionBlock completion = currentDownloadOperation.completionBlock;
     [currentDownloadOperation stop];
     [self.operationQueue removeOperation:currentDownloadOperation];
+    if (error == nil) {
+        /** Movie file to permanent location **/
+        NSURL *permanentLocation = [self moveFileWithName:resourceName toPermanentLocationFromTemporaryLocation:localURL];
+        if (permanentLocation == nil) {
+            error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
+        }
+    }
     dispatch_async(dispatch_get_main_queue(), ^{
         if (completion) completion(currentDownloadOperation, localURL, error);
         completion = nil;
     });
+}
+
+- (NSURL *)moveFileWithName:(NSString *)fileName toPermanentLocationFromTemporaryLocation:(NSURL *)temporaryLocation {
+    
+    NSURL *documentsFolder = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSString *permanentPath = [documentsFolder.path stringByAppendingPathComponent:fileName];
+    NSURL *permanentLocation = [NSURL fileURLWithPath:permanentPath];
+    NSError *moveFileError;
+    NSLog(@"Moving file %@ from %@ to permanent location ... ", fileName, temporaryLocation);
+    [[NSFileManager defaultManager] moveItemAtURL:temporaryLocation toURL:permanentLocation error:&moveFileError];
+    if (moveFileError) {
+        NSLog(@"Could not move file to permanent location: %@", [moveFileError localizedDescription]);
+        return nil;
+    }
+    return permanentLocation;
 }
 
 - (void)session:(MCSession *)session didReceiveStream:(NSInputStream *)stream withName:(NSString *)streamName fromPeer:(MCPeerID *)peerID { }

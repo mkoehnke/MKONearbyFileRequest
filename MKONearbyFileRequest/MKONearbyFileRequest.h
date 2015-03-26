@@ -176,6 +176,8 @@ typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSSt
 
 /**
  *  Starts a request to download a file from a nearby peer.
+ *  Note: The downloaded file will be moved from the temporary folder 
+ *  to the documents folder.
  *
  *  @param uuid       The file unique identifier.
  *  @param progress   The progress block.
