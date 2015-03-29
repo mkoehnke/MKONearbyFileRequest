@@ -430,8 +430,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
             NSLog(@"Asking User for permission");
             if (self.uploadPermissionBlock) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    BOOL granted = self.uploadPermissionBlock(uploadOperation, uuid);
-                    accessHandler(granted);
+                    self.uploadPermissionBlock(uploadOperation, uuid, accessHandler);
                 });
             } else {
                 [self askForPermission:uploadOperation completion:accessHandler];
