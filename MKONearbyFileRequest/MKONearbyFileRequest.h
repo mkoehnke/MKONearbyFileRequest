@@ -66,12 +66,12 @@ typedef void(^MKOCompletionBlock)(MKONearbyFileRequestOperation *operation, NSUR
  *  The permission callback that will be called before upload operations in order to determine
  *  if a user is allowed to download a file from the local device.
  *
- *  @param operation The file request operation instance.
- *  @param fileUUID  The unique identifier of the file, that is requested by a remote peer.
- *
- *  @return 'YES' if permission is granted to download the file
+ *  @param operation          The file request operation instance.
+ *  @param fileUUID           The unique identifier of the file, that is requested by a remote peer.
+ *  @param permissionHandler  Call this permission handler with the parameter 'YES' if permission is
+ *                            granted to download the file.
  */
-typedef BOOL(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSString *fileUUID);
+typedef void(^MKOPermissionBlock)(MKONearbyFileRequestOperation *operation, NSString *fileUUID, void (^permissionHandler)(BOOL granted));
 
 
 ///--------------------------------------
