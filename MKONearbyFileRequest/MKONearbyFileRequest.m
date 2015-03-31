@@ -30,7 +30,8 @@
 
 typedef void(^MKOAskPermissionBlock)(BOOL granted);
 
-static CGFloat const kInvitationTimeout                     = 30.;
+static CGFloat const kInvitationSendingTimeout              = 30.;
+static CGFloat const kInvitationAcceptingTimeout            = 15.;
 
 static NSString * const kServiceType                        = @"mko-filerequest";
 static NSString * const kDiscoveryMetaKeyType               = @"discovery-type";
@@ -199,7 +200,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 }
 
 - (MKONearbyFileRequestOperation *)operation:(MKONearbyFileRequestOperationType)type withPeerID:(MCPeerID *)peerID {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"remotePeerID == %@", peerID];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"remotePeerID == %@ AND type == %d", peerID, type];
     return [[self.operations filteredArrayUsingPredicate:predicate] firstObject];
 }
 
@@ -223,8 +224,8 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 }
 
 - (void)startObserver {
-    _operationTimer = [NSTimer scheduledTimerWithTimeInterval:5.
-        target:self selector:@selector(downloadOperationTimerFired:) userInfo:nil repeats:YES];
+    _operationTimer = [NSTimer scheduledTimerWithTimeInterval:5. target:self selector:@selector(downloadOperationTimerFired:)
+                                                     userInfo:nil repeats:YES];
 }
 
 - (void)stopObserver {
@@ -356,7 +357,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 
 - (MKONearbyFileRequestOperation *)requestFile:(NSString *)uuid progress:(MKOProgressBlock)progress completion:(MKOCompletionBlock)completion {
     NSParameterAssert(completion != nil);
-
+    
     MKONearbyFileRequestOperation *downloadOperation = [MKONearbyFileRequestOperation new];
     downloadOperation.type = MKONearbyFileRequestOperationTypeDownload;
     downloadOperation.fileUUID = uuid;
@@ -381,11 +382,23 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
        withContext:(NSData *)context invitationHandler:(void (^)(BOOL accept, MCSession *session))invitationHandler {
     MKONearbyFileRequestOperation *currentDownloadOperation = [self currentDownloadOperation];
     NSDictionary *discoveryInfo = [NSKeyedUnarchiver unarchiveObjectWithData:context];
-    if (self.isAdvertising && [currentDownloadOperation.discoveryInfo isEqualToDictionary:discoveryInfo]) {
+    if (currentDownloadOperation.remotePeer.length == 0 && [currentDownloadOperation.discoveryInfo isEqualToDictionary:discoveryInfo]) {
         NSLog(@"Found peer %@ for downloading file with UUID: %@", peerID.displayName, discoveryInfo[kDiscoveryMetaKeyUUID]);
-        [self stopAdvertiser];
         currentDownloadOperation.remotePeerID = peerID;
         invitationHandler(YES, self.session);
+        
+        /** We need a way to detect that the invitation has not been received by the browser -> manual disconnect **/
+        /** Timeout within the browser has to connect to this advertiser, otherwise -> disconnect **/
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kInvitationAcceptingTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            NSLog(@"Checking if invitation acceptance was received by %@ ... ", peerID.displayName);
+            if ([self isAdvertising] && [currentDownloadOperation isEqual:[self currentDownloadOperation]]) {
+                NSLog(@"Despite accepting an invitation, the remote peer (%@ = browser) did not connect in time.\
+                        Therefore we declare the peer as disconnected.", peerID.displayName);
+                NSError *error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999
+                                                 userInfo:@{NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Connection to %@ lost.", peerID.displayName]}];
+                [self finishDownloadWithOperation:currentDownloadOperation resource:currentDownloadOperation.fileUUID url:nil error:error];
+            }
+        });
     } else {
         invitationHandler(NO, nil);
     }
@@ -409,7 +422,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
         NSString *uuid = info[kDiscoveryMetaKeyUUID];
         NSLog(@"Lookup file with uuid: %@", uuid);
         BOOL fileExists = [self.fileLocator fileExists:uuid];
-
+        
         if (fileExists && [self.operationQueue operationsInQueue:MKONearbyFileRequestOperationTypeDownload].count == 0) {
             NSLog(@"%@ is ready for sharing file %@ with %@", self.peerID, uuid, peerID);
             MKONearbyFileRequestOperation *uploadOperation = [MKONearbyFileRequestOperation new];
@@ -424,7 +437,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
                 if (accept && [self.operationQueue addOperation:uploadOperation]) {
                     [uploadOperation start];
                     NSData *context = [NSKeyedArchiver archivedDataWithRootObject:uploadOperation.discoveryInfo];
-                    [self.browser invitePeer:peerID toSession:self.session withContext:context timeout:kInvitationTimeout];
+                    [self.browser invitePeer:peerID toSession:self.session withContext:context timeout:kInvitationSendingTimeout];
                 }
             };
             NSLog(@"Asking User for permission");
@@ -442,7 +455,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 - (void)browser:(MCNearbyServiceBrowser *)browser lostPeer:(MCPeerID *)peerID {
     NSLog(@"Peer %@ stopped advertising.", peerID.displayName);
     /** Check if remote peer is already connected to this session. If yes, we don't handle a
-        connection loss here. We wait for the peer to change the state to disconnected. **/
+     connection loss here. We wait for the peer to change the state to disconnected. **/
     if ([self.session.connectedPeers containsObject:peerID] == NO) {
         /** This is the case if a peer disconnected before this host could send out an invitation. **/
         NSLog(@"Peer %@ is not connected yet. Hence we disconnect manually.", peerID.displayName);
@@ -466,8 +479,10 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 - (void)session:(MCSession *)session peer:(MCPeerID *)peerID didChangeState:(MCSessionState)state {
     if (state == MCSessionStateConnected) {
         NSLog(@"Peer %@ did connect to session.", peerID.displayName);
+        
+        /** Handle Upload Operation Peer Connect **/
         MKONearbyFileRequestOperation *uploadOperation = [self.operationQueue operation:MKONearbyFileRequestOperationTypeUpload withPeerID:peerID];
-        if (uploadOperation && uploadOperation.type == MKONearbyFileRequestOperationTypeUpload) {
+        if (uploadOperation) {
             if (self.uploadProgressBlock) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     self.uploadProgressBlock(uploadOperation, 0.);
@@ -479,6 +494,13 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
             uploadOperation.processing = [self.session sendResourceAtURL:fileToSend withName:uploadOperation.fileUUID toPeer:peerID withCompletionHandler:^(NSError *error) {
                 [self finishUploadWithOperation:uploadOperation url:fileToSend error:error];
             }];
+        }
+        
+        /** Handle Download Operation Peer Connect **/
+        MKONearbyFileRequestOperation *downloadOperation = [self.operationQueue operation:MKONearbyFileRequestOperationTypeDownload withPeerID:peerID];
+        if (downloadOperation) {
+            NSLog(@"%@ will stop advertising ...", self.peerID.displayName);
+            [self stopAdvertiser];
         }
     } else if (state == MCSessionStateNotConnected) {
         NSLog(@"Peer %@ did disconnect from session.", peerID.displayName);
@@ -506,6 +528,29 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
     });
 }
 
+- (void)finishDownloadWithOperation:(MKONearbyFileRequestOperation *)operation resource:(NSString *)resource url:(NSURL *)url error:(NSError *)error {
+    NSLog(@"Calling session disconnect.");
+    [self.session disconnect];
+    
+    __block MKOCompletionBlock completion = operation.completionBlock;
+    [operation stop];
+    [self.operationQueue removeOperation:operation];
+    
+    NSURL *permanentLocation;
+    if (error == nil) {
+        /** Movie file to permanent location **/
+        permanentLocation = [self moveFileWithName:resource toPermanentLocationFromTemporaryLocation:url];
+        if (permanentLocation == nil) {
+            error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
+        }
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (completion) completion(operation, permanentLocation, error);
+        completion = nil;
+    });
+}
+
 - (void)session:(MCSession *)session didStartReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID withProgress:(NSProgress *)progress {
     NSLog(@"didStartReceivingResourceWithName: %@ from peer: %@", resourceName, peerID.displayName);
     MKONearbyFileRequestOperation *currentDownloadOperation = [self currentDownloadOperation];
@@ -519,26 +564,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 
 - (void)session:(MCSession *)session didFinishReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID atURL:(NSURL *)localURL withError:(NSError *)error {
     NSLog(@"didFinishReceivingResourceWithName: %@ from peer: %@", resourceName, peerID.displayName);
-    [self.session disconnect];
-
-    MKONearbyFileRequestOperation *currentDownloadOperation = [self currentDownloadOperation];
-    __block MKOCompletionBlock completion = currentDownloadOperation.completionBlock;
-    [currentDownloadOperation stop];
-    [self.operationQueue removeOperation:currentDownloadOperation];
-    
-    NSURL *permanentLocation;
-    if (error == nil) {
-        /** Movie file to permanent location **/
-        permanentLocation = [self moveFileWithName:resourceName toPermanentLocationFromTemporaryLocation:localURL];
-        if (permanentLocation == nil) {
-            error = [NSError errorWithDomain:@"de.mathiaskoehnke.filerequest" code:999 userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
-        }
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (completion) completion(currentDownloadOperation, permanentLocation, error);
-        completion = nil;
-    });
+    [self finishDownloadWithOperation:[self currentDownloadOperation] resource:resourceName url:localURL error:error];
 }
 
 #pragma mark  - NSFileManager
@@ -592,8 +618,3 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 }
 
 @end
-
-
-
-
-

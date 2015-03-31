@@ -69,6 +69,10 @@ static NSString * const kFileUUID           = @"image-123456789.png";
 }
 
 - (void)didTouchCancelButton {
+    @try {
+        [self.operation removeObserver:self forKeyPath:NSStringFromSelector(@selector(remotePeer))];
+    }
+    @catch (NSException * __unused exception) {}
     [self.operation cancel];
     [self setProgressHidden:YES];
     [self setButtonIdle:YES];
