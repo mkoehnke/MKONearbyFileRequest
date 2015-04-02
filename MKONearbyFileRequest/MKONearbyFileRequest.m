@@ -47,6 +47,7 @@ static NSString * const kDiscoveryMetaKeyUUID               = @"discovery-uuid";
 static NSString * const kErrorDomain                        = @"de.mathiaskoehnke.filerequest";
 static NSUInteger const kFileMoveErrorCode                  = 999;
 static NSUInteger const kConnectionToPeerLostErrorCode      = 998;
+static NSUInteger const kOperationCancelled                 = 997;
 
 ///--------------------------------------------------
 /// @name MKONearbyFileRequestOperation
@@ -151,6 +152,7 @@ static NSUInteger const kConnectionToPeerLostErrorCode      = 998;
 @property (nonatomic, strong) NSTimer *operationTimer;
 - (BOOL)addOperation:(MKONearbyFileRequestOperation *)operation;
 - (BOOL)removeOperation:(MKONearbyFileRequestOperation *)operation;
+- (void)removeAllOperations;
 - (NSArray *)operationsInQueue:(MKONearbyFileRequestOperationType)type;
 - (NSArray *)operationsNotStarted:(MKONearbyFileRequestOperationType)type;
 - (NSArray *)operationsInProgress:(MKONearbyFileRequestOperationType)type;
@@ -185,6 +187,12 @@ static NSUInteger const kConnectionToPeerLostErrorCode      = 998;
             return YES;
         }
         return NO;
+    }
+}
+
+- (void)removeAllOperations {
+    @synchronized (_operations) {
+        [_operations removeAllObjects];
     }
 }
 
@@ -255,6 +263,7 @@ static NSUInteger const kConnectionToPeerLostErrorCode      = 998;
 @property (nonatomic, strong) MCSession *session;
 @property (nonatomic, strong) MCNearbyServiceAdvertiser *advertiser;
 @property (nonatomic, strong) MCNearbyServiceBrowser *browser;
+@property (nonatomic, getter=isRequestListening) BOOL requestListening;
 
 @property (nonatomic, strong) id<MKOFileLocator> fileLocator;
 @property (nonatomic, strong) MKONearbyFileRequestOperationQueue *operationQueue;
@@ -281,22 +290,67 @@ static NSUInteger const kConnectionToPeerLostErrorCode      = 998;
         NSParameterAssert(fileLocator != nil);
         
         _displayName = displayName;
-        
-        _peerID = [[MCPeerID alloc] initWithDisplayName:displayName];
-        _session = [[MCSession alloc] initWithPeer:_peerID];
-        _session.delegate = self;
-        
-        _browser = [[MCNearbyServiceBrowser alloc] initWithPeer:self.peerID serviceType:kServiceType];
-        _browser.delegate = self;
-        
         _fileLocator = fileLocator;
         _operationQueue = [MKONearbyFileRequestOperationQueue new];
         _askPermissionCompletionBlocks = [NSMutableArray array];
         
         _fileManager = [NSFileManager new];
         _fileManager.delegate = self;
+        
+        [self setupSession];
+        
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
+                                                          object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+            NSLog(@"Entering Background...");
+            BOOL isRequestListening = self.isRequestListening;
+            [self tearDownSession];
+            [self setRequestListening:isRequestListening];
+        }];
+        
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification
+                                                          object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+            NSLog(@"Entering Foreground...");
+            [self setupSession];
+            if (self.isRequestListening) [self startRequestListener];
+        }];
     }
     return self;
+}
+
+- (void)setupSession {
+    [self setPeerID:[[MCPeerID alloc] initWithDisplayName:self.displayName]];
+    [self setSession:[[MCSession alloc] initWithPeer:self.peerID]];
+    [self.session setDelegate:self];
+    [self setBrowser:[[MCNearbyServiceBrowser alloc] initWithPeer:self.peerID serviceType:kServiceType]];
+    [self.browser setDelegate:nil];
+}
+
+- (void)tearDownSession {
+    [self cancelAllOperations];
+    [self stopRequestListener];
+    [self stopAdvertiser];
+    [self.browser setDelegate:nil];
+    [self setBrowser:nil];
+    [self.session setDelegate:nil];
+    [self setSession:nil];
+    [self setPeerID:nil];
+}
+
+- (void)cancelAllOperations {
+    NSError *error = [NSError errorWithDomain:kErrorDomain code:kOperationCancelled userInfo:@{NSLocalizedDescriptionKey : @"The operation was cancelled."}];
+    MKONearbyFileRequestOperation *downloadOperation = [self.operationQueue operationsInQueue:MKONearbyFileRequestOperationTypeDownload].firstObject;
+    [self finishDownloadWithOperation:downloadOperation resource:downloadOperation.fileUUID url:nil error:error];
+    
+    NSArray *uploadOperations = [self.operationQueue operationsInQueue:MKONearbyFileRequestOperationTypeUpload];
+    [uploadOperations enumerateObjectsUsingBlock:^(MKONearbyFileRequestOperation *uploadOperation, NSUInteger idx, BOOL *stop) {
+        [self finishUploadWithOperation:uploadOperation url:nil error:error];
+    }];
+    [self.operationQueue removeAllOperations];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [self tearDownSession];
 }
 
 #pragma mark - MKONearbyFileRequestOperation Delegate
@@ -363,12 +417,14 @@ static NSUInteger const kConnectionToPeerLostErrorCode      = 998;
     NSLog(@"Starting Browser ...");
     [self.operationQueue startObserver];
     [self.browser startBrowsingForPeers];
+    [self setRequestListening:YES];
 }
 
 - (void)stopRequestListener {
     NSLog(@"Stopping Browser ...");
     [self.operationQueue stopObserver];
     [self.browser stopBrowsingForPeers];
+    [self setRequestListening:NO];
 }
 
 - (MKONearbyFileRequestOperation *)requestFile:(NSString *)uuid progress:(MKOProgressBlock)progress completion:(MKOCompletionBlock)completion {
