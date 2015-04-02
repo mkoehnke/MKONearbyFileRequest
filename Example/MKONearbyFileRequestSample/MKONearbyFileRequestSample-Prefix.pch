@@ -1,0 +1,14 @@
+//
+//  MKONearbyFileRequestSample-Prefix.pch
+//  MKONearbyFileRequestSample
+//
+//  Created by Mathias Köhnke on 02/04/15.
+//  Copyright (c) 2015 Mathias Koehnke. All rights reserved.
+//
+
+#ifndef MKONearbyFileRequestSample_MKONearbyFileRequestSample_Prefix_pch
+#define MKONearbyFileRequestSample_MKONearbyFileRequestSample_Prefix_pch
+
+#define NFR_ENABLE_LOGGING 1
+
+#endif

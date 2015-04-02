@@ -19,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BF3C5A5D1ACD380700D33183 /* MKONearbyFileRequestSample-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MKONearbyFileRequestSample-Prefix.pch"; sourceTree = "<group>"; };
 		BF584C5B1ABA3D9B00F1E17F /* image-123456789.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "image-123456789.png"; sourceTree = "<group>"; };
 		BFD0EBEF1AB88F0800DA7424 /* MKONearbyFileRequestSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MKONearbyFileRequestSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFD0EBF31AB88F0800DA7424 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -85,6 +86,7 @@
 				BFD0EBF31AB88F0800DA7424 /* Info.plist */,
 				BFD0EBF41AB88F0800DA7424 /* main.m */,
 				BF584C5B1ABA3D9B00F1E17F /* image-123456789.png */,
+				BF3C5A5D1ACD380700D33183 /* MKONearbyFileRequestSample-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -292,6 +294,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREFIX_HEADER = "MKONearbyFileRequestSample/MKONearbyFileRequestSample-prefix.pch";
 				INFOPLIST_FILE = MKONearbyFileRequestSample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -302,6 +305,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREFIX_HEADER = "MKONearbyFileRequestSample/MKONearbyFileRequestSample-prefix.pch";
 				INFOPLIST_FILE = MKONearbyFileRequestSample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
