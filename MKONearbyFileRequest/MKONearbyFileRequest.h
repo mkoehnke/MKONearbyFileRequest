@@ -24,6 +24,14 @@
 #import <Foundation/Foundation.h>
 #import "MKOBundleFileLocator.h"
 
+#ifndef NFR_ENABLE_LOGGING
+    #ifdef DEBUG
+        #define NFR_ENABLE_LOGGING 1
+    #else
+        #define NFR_ENABLE_LOGGING 0
+    #endif
+#endif
+
 @class MKONearbyFileRequest;
 @class MKONearbyFileRequestOperation;
 

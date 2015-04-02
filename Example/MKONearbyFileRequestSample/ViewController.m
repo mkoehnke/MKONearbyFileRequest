@@ -60,7 +60,7 @@ static NSString * const kFileUUID           = @"image-123456789.png";
 - (void)didTouchSendButton {
     self.operation = [self.fileRequest requestFile:kFileUUID progress:[self progressBlock] completion:[self completionBlock]];
     if (self.operation) {
-        [self.operation addObserver:self forKeyPath:NSStringFromSelector(@selector(remotePeer)) options:0 context:nil];
+        [self addRemotePeerObserverToOperation:self.operation];
         [self.imageView setImage:nil];
         [self setProgressIndeterminate:YES];
         [self setProgressHidden:NO];
@@ -69,6 +69,7 @@ static NSString * const kFileUUID           = @"image-123456789.png";
 }
 
 - (void)didTouchCancelButton {
+    [self removeRemotePeerObserverFromOperation:self.operation];
     [self.operation cancel];
     [self setProgressHidden:YES];
     [self setButtonIdle:YES];
@@ -92,14 +93,15 @@ static NSString * const kFileUUID           = @"image-123456789.png";
 
 - (MKOProgressBlock)progressBlock {
     if (!_progressBlock) {
-        ViewController * __weak weakSelf = self;
+        __weak __typeof__(self) weakSelf = self;
         _progressBlock = ^void(MKONearbyFileRequestOperation *operation, float progress) {
+            __typeof__(self) strongSelf = weakSelf;
             if (progress > 0. && progress <= 0.1) {
-                [weakSelf setProgressHidden:NO];
-                [weakSelf setProgressIndeterminate:NO];
+                [strongSelf setProgressHidden:NO];
+                [strongSelf setProgressIndeterminate:NO];
             } else {
-                weakSelf.progressView.progress = progress;
-                weakSelf.progressLabel.text = [NSString stringWithFormat:@"%.01f%%", progress * 100];
+                strongSelf.progressView.progress = progress;
+                strongSelf.progressLabel.text = [NSString stringWithFormat:@"%.01f%%", progress * 100];
             }
         };
     }
@@ -108,25 +110,23 @@ static NSString * const kFileUUID           = @"image-123456789.png";
 
 - (MKOCompletionBlock)completionBlock {
     if (!_completionBlock) {
-        ViewController * __weak weakSelf = self;
+        __weak __typeof__(self) weakSelf = self;
         _completionBlock =  ^void(MKONearbyFileRequestOperation *operation, NSURL *url, NSError *error) {
-            [weakSelf setProgressHidden:YES];
-            [weakSelf setButtonIdle:YES];
-            [weakSelf.sendButton setEnabled:YES];
-            @try {
-                [weakSelf.operation removeObserver:weakSelf forKeyPath:NSStringFromSelector(@selector(remotePeer))];
-            }
-            @catch (NSException * __unused exception) {}
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf setProgressHidden:YES];
+            [strongSelf setButtonIdle:YES];
+            [strongSelf.sendButton setEnabled:YES];
+            [strongSelf removeRemotePeerObserverFromOperation:weakSelf.operation];
             
             if (error == nil) {
                 if (operation.type == MKONearbyFileRequestOperationTypeDownload) {
                     NSData *data = [[NSFileManager defaultManager] contentsAtPath:[url path]];
                     UIImage *image = [UIImage imageWithData:data];
-                    [weakSelf.imageView setImage:image];
-                    [weakSelf.progressView setProgress:0];
+                    [strongSelf.imageView setImage:image];
+                    [strongSelf.progressView setProgress:0];
                 }
             } else {
-                [weakSelf showError:error];
+                [strongSelf showError:error];
             }
         };
     }
@@ -141,6 +141,16 @@ static NSString * const kFileUUID           = @"image-123456789.png";
     [alert show];
 }
 
+- (void)addRemotePeerObserverToOperation:(MKONearbyFileRequestOperation *)operation {
+    [operation addObserver:self forKeyPath:NSStringFromSelector(@selector(remotePeer)) options:0 context:nil];
+}
+
+- (void)removeRemotePeerObserverFromOperation:(MKONearbyFileRequestOperation *)operation {
+    @try {
+        [operation removeObserver:self forKeyPath:NSStringFromSelector(@selector(remotePeer))];
+    }
+    @catch (NSException * __unused exception) {}
+}
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([keyPath isEqualToString:NSStringFromSelector(@selector(remotePeer))]) {
