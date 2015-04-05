@@ -42,8 +42,17 @@ static NSString * const kFileUUID           = @"image-123456789.png";
     [self setFileRequest:[[MKONearbyFileRequest alloc] initWithDisplayName:displayName fileLocator:fileLocator]];
     [self.fileRequest setUploadProgressBlock:[self progressBlock]];
     [self.fileRequest setUploadCompletionBlock:[self completionBlock]];
-    [self.fileRequest startRequestListener];
     [self setButtonIdle:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.fileRequest startRequestListener];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.fileRequest stopRequestListener];
 }
 
 - (void)setButtonIdle:(BOOL)idle {
