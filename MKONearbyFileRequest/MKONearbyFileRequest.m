@@ -322,7 +322,7 @@ static NSUInteger const kOperationCancelled                 = 997;
     [self setSession:[[MCSession alloc] initWithPeer:self.peerID]];
     [self.session setDelegate:self];
     [self setBrowser:[[MCNearbyServiceBrowser alloc] initWithPeer:self.peerID serviceType:kServiceType]];
-    [self.browser setDelegate:nil];
+    [self.browser setDelegate:self];
 }
 
 - (void)tearDownSession {
@@ -396,7 +396,7 @@ static NSUInteger const kOperationCancelled                 = 997;
 # pragma mark - Request
 
 - (void)startAdvertiserWithDiscoveryInfo:(NSDictionary *)discoveryInfo {
-    NSLog(@"Starting Advertiser ...");
+    NSLog(@"Starting Advertiser for Peer: %@", self.peerID.displayName);
     [self setAdvertiser:[[MCNearbyServiceAdvertiser alloc] initWithPeer:self.peerID discoveryInfo:discoveryInfo serviceType:kServiceType]];
     [self.advertiser setDelegate:self];
     [self.advertiser startAdvertisingPeer];
@@ -414,7 +414,7 @@ static NSUInteger const kOperationCancelled                 = 997;
 }
 
 - (void)startRequestListener {
-    NSLog(@"Starting Browser ...");
+    NSLog(@"Starting Browser for Peer: %@", self.peerID.displayName);
     [self.operationQueue startObserver];
     [self.browser startBrowsingForPeers];
     [self setRequestListening:YES];
