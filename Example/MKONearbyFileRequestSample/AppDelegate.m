@@ -26,6 +26,7 @@
 
 @implementation AppDelegate
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    #pragma unused(application, launchOptions)
     return YES;
 }
 @end

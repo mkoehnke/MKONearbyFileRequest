@@ -104,6 +104,7 @@ static NSString * const kFileUUID           = @"image-123456789.png";
     if (!_progressBlock) {
         __weak __typeof__(self) weakSelf = self;
         _progressBlock = ^void(MKONearbyFileRequestOperation *operation, float progress) {
+            #pragma unused(operation)
             __typeof__(self) strongSelf = weakSelf;
             if (progress > 0. && progress <= 0.1) {
                 [strongSelf setProgressHidden:NO];
