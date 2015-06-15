@@ -307,19 +307,17 @@ static NSUInteger const kOperationCancelled                 = 997;
                                                           object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
             #pragma unused(note)
             NSLog(@"Entering Background...");
-            __typeof__(self) strongSelf = weakSelf;
-            BOOL isRequestListening = self.isRequestListening;
-            [strongSelf tearDownSession];
-            [strongSelf setRequestListening:isRequestListening];
+            BOOL isRequestListening = weakSelf.isRequestListening;
+            [weakSelf tearDownSession];
+            [weakSelf setRequestListening:isRequestListening];
         }];
         
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification
                                                           object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
             #pragma unused(note)
             NSLog(@"Entering Foreground...");
-            __typeof__(self) strongSelf = weakSelf;
-            [strongSelf setupSession];
-            if (strongSelf.isRequestListening) [strongSelf startRequestListener];
+            [weakSelf setupSession];
+            if (weakSelf.isRequestListening) [weakSelf startRequestListener];
         }];
     }
     return self;
