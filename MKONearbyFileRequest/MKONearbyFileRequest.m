@@ -630,17 +630,18 @@ static NSUInteger const kOperationCancelled                 = 997;
     [self.operationQueue removeOperation:operation];
     
     NSURL *permanentLocation;
-    if (error == nil) {
+    NSError *fileMoveError;
+    if (error == nil && url != nil) {
         /** Movie file to permanent location **/
         permanentLocation = [self moveFileWithName:resource toPermanentLocationFromTemporaryLocation:url];
         if (permanentLocation == nil) {
-            error = [NSError errorWithDomain:kErrorDomain code:kFileMoveErrorCode
-                                    userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
+            fileMoveError = [NSError errorWithDomain:kErrorDomain code:kFileMoveErrorCode
+                                            userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
         }
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (completion) completion(operation, permanentLocation, error);
+        if (completion) completion(operation, permanentLocation, error? : fileMoveError);
         completion = nil;
     });
 }
