@@ -278,6 +278,9 @@ static NSUInteger const kOperationCancelled                 = 997;
 @property (nonatomic, strong) NSMutableArray *askPermissionCompletionBlocks;
 
 @property (nonatomic, strong) NSFileManager *fileManager;
+
+@property (nonatomic, strong) id willEnterForegroundNotificationObserver;
+@property (nonatomic, strong) id didEnterBackgroundNotificationObserver;
 @end
 
 @implementation MKONearbyFileRequest
@@ -303,8 +306,9 @@ static NSUInteger const kOperationCancelled                 = 997;
         [self setupSession];
         
         __weak __typeof__(self) weakSelf = self;
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
-                                                          object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+        _didEnterBackgroundNotificationObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
+                                                              object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
             #pragma unused(note)
             NSLog(@"Entering Background...");
             BOOL isRequestListening = weakSelf.isRequestListening;
@@ -312,7 +316,8 @@ static NSUInteger const kOperationCancelled                 = 997;
             [weakSelf setRequestListening:isRequestListening];
         }];
         
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification
+        _willEnterForegroundNotificationObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification
                                                           object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
             #pragma unused(note)
             NSLog(@"Entering Foreground...");
@@ -356,7 +361,8 @@ static NSUInteger const kOperationCancelled                 = 997;
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.willEnterForegroundNotificationObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.didEnterBackgroundNotificationObserver];
     [self tearDownSession];
 }
 
@@ -624,17 +630,18 @@ static NSUInteger const kOperationCancelled                 = 997;
     [self.operationQueue removeOperation:operation];
     
     NSURL *permanentLocation;
-    if (error == nil) {
+    NSError *fileMoveError;
+    if (error == nil && url != nil) {
         /** Movie file to permanent location **/
         permanentLocation = [self moveFileWithName:resource toPermanentLocationFromTemporaryLocation:url];
         if (permanentLocation == nil) {
-            error = [NSError errorWithDomain:kErrorDomain code:kFileMoveErrorCode
-                                    userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
+            fileMoveError = [NSError errorWithDomain:kErrorDomain code:kFileMoveErrorCode
+                                            userInfo:@{NSLocalizedDescriptionKey : @"Could not move file into permanent location."}];
         }
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (completion) completion(operation, permanentLocation, error);
+        if (completion) completion(operation, permanentLocation, error? : fileMoveError);
         completion = nil;
     });
 }
