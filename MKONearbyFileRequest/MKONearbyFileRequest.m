@@ -152,6 +152,7 @@ static NSUInteger const kOperationCancelled                 = 997;
 @interface MKONearbyFileRequestOperationQueue : NSObject
 @property (nonatomic, strong) NSMutableArray *operations;
 @property (nonatomic, strong) NSTimer *operationTimer;
+@property (nonatomic, strong) dispatch_queue_t operationAccessQueue;
 - (BOOL)addOperation:(MKONearbyFileRequestOperation *)operation;
 - (BOOL)removeOperation:(MKONearbyFileRequestOperation *)operation;
 - (void)removeAllOperations;
@@ -166,41 +167,58 @@ static NSUInteger const kOperationCancelled                 = 997;
     self = [super init];
     if (self) {
         _operations = [NSMutableArray array];
+        _operationAccessQueue = dispatch_queue_create("com.mathiaskoehnke.nearbyFileRequest.operationAccessQeue", DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }
 
 - (BOOL)addOperation:(MKONearbyFileRequestOperation *)operation {
-    @synchronized (_operations) {
-        if ([self canRun:operation]) {
-            [_operations addObject:operation];
-            NSLog(@"Number of operations: %lu", (unsigned long)[_operations count]);
-            return YES;
-        }
-        return NO;
+    if ([self canRun:operation]) {
+        __weak __typeof__(self) weakSelf = self;
+        dispatch_barrier_sync(_operationAccessQueue, ^{
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf->_operations addObject:operation];
+            NSLog(@"Number of operations: %lu", (unsigned long)[strongSelf->_operations count]);
+        });
+        return YES;
     }
+    return NO;
 }
 
 - (BOOL)removeOperation:(MKONearbyFileRequestOperation *)operation {
-    @synchronized (_operations) {
-        if (operation) {
-            [_operations removeObject:operation];
-            NSLog(@"Remaining operations: %lu", (unsigned long)[_operations count]);
-            return YES;
-        }
-        return NO;
+    if (operation) {
+        __weak __typeof__(self) weakSelf = self;
+        dispatch_barrier_sync(_operationAccessQueue, ^{
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf->_operations removeObject:operation];
+            NSLog(@"Remaining operations: %lu", (unsigned long)[strongSelf->_operations count]);
+        });
+        return YES;
     }
+    return NO;
 }
 
 - (void)removeAllOperations {
-    @synchronized (_operations) {
-        [_operations removeAllObjects];
-    }
+    __weak __typeof__(self) weakSelf = self;
+    dispatch_barrier_sync(_operationAccessQueue, ^{
+        __typeof__(self) strongSelf = weakSelf;
+        [strongSelf->_operations removeAllObjects];
+    });
+}
+
+- (NSArray *)operationsWithPredicate:(NSPredicate *)predicate {
+    __block NSArray *operations;
+    __weak __typeof__(self) weakSelf = self;
+    dispatch_sync(_operationAccessQueue, ^{
+        __typeof__(self) strongSelf = weakSelf;
+        operations = [strongSelf.operations filteredArrayUsingPredicate:predicate];
+    });
+    return operations;
 }
 
 - (NSArray *)operationsInQueue:(MKONearbyFileRequestOperationType)type {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %d", type];
-    return [self.operations filteredArrayUsingPredicate:predicate];
+    return [self operationsWithPredicate:predicate];
 }
 
 - (NSArray *)operationsInProgress:(MKONearbyFileRequestOperationType)type {
@@ -211,17 +229,17 @@ static NSUInteger const kOperationCancelled                 = 997;
     NSPredicate *predicate;
     if (fileUUID) { predicate = [NSPredicate predicateWithFormat:@"isRunning == %d AND type == %d AND fileUUID == %@", YES, type, fileUUID]; }
     else { predicate = [NSPredicate predicateWithFormat:@"isRunning == %d AND type == %d", YES, type]; }
-    return [self.operations filteredArrayUsingPredicate:predicate];
+    return [self operationsWithPredicate:predicate];
 }
 
 - (NSArray *)operationsNotStarted:(MKONearbyFileRequestOperationType)type {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isRunning == %d AND type == %d", NO, type];
-    return [self.operations filteredArrayUsingPredicate:predicate];
+    return [self operationsWithPredicate:predicate];
 }
 
 - (MKONearbyFileRequestOperation *)operation:(MKONearbyFileRequestOperationType)type withPeerID:(MCPeerID *)peerID {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"remotePeerID == %@ AND type == %d", peerID, type];
-    return [[self.operations filteredArrayUsingPredicate:predicate] firstObject];
+    return [[self operationsWithPredicate:predicate] firstObject];
 }
 
 - (BOOL)canRun:(MKONearbyFileRequestOperation *)operation {
@@ -276,6 +294,7 @@ static NSUInteger const kOperationCancelled                 = 997;
 @property (nonatomic, strong) MKOPermissionBlock uploadPermissionBlock;
 
 @property (nonatomic, strong) NSMutableArray *askPermissionCompletionBlocks;
+@property (nonatomic, strong) dispatch_queue_t askPermissionCompletionBlocksAccessQueue;
 
 @property (nonatomic, strong) NSFileManager *fileManager;
 
@@ -299,6 +318,8 @@ static NSUInteger const kOperationCancelled                 = 997;
         _fileLocator = fileLocator;
         _operationQueue = [MKONearbyFileRequestOperationQueue new];
         _askPermissionCompletionBlocks = [NSMutableArray array];
+        _askPermissionCompletionBlocksAccessQueue =
+            dispatch_queue_create("com.mathiaskoehnke.nearbyFileRequest.askPermissionCompletionBlocksAccessQueue", DISPATCH_QUEUE_CONCURRENT);
         
         _fileManager = [NSFileManager new];
         _fileManager.delegate = self;
@@ -389,10 +410,8 @@ static NSUInteger const kOperationCancelled                 = 997;
     __weak __typeof__(self) weakSelf = self;
     _uploadCompletionBlock = ^(MKONearbyFileRequestOperation *operation, NSURL *url, NSError *error) {
         __typeof__(self) strongSelf = weakSelf;
-        @synchronized (strongSelf) {
-            NSArray *operations = [strongSelf.operationQueue operationsInProgress:MKONearbyFileRequestOperationTypeUpload fileUUID:operation.fileUUID];
-            if (operations.count == 1 && block) block(operation, url, error);
-        }
+        NSArray *operations = [strongSelf.operationQueue operationsInProgress:MKONearbyFileRequestOperationTypeUpload fileUUID:operation.fileUUID];
+        if (operations.count == 1 && block) block(operation, url, error);
     };
 }
 
@@ -707,11 +726,28 @@ static NSUInteger const kOperationCancelled                 = 997;
 
 #pragma mark - Helper Methods
 
+- (void)enqueuePermissionCompletionBlock:(MKOAskPermissionBlock)block {
+    __weak __typeof__(self) weakSelf = self;
+    dispatch_barrier_sync(_askPermissionCompletionBlocksAccessQueue, ^{
+        __typeof__(self) strongSelf = weakSelf;
+        [strongSelf->_askPermissionCompletionBlocks addObject:block];
+    });
+}
+
+- (MKOAskPermissionBlock)dequeuePermissionCompletionBlock {
+    __block MKOAskPermissionBlock completion;
+    __weak __typeof__(self) weakSelf = self;
+    dispatch_barrier_sync(_askPermissionCompletionBlocksAccessQueue, ^{
+        __typeof__(self) strongSelf = weakSelf;
+        completion = [strongSelf->_askPermissionCompletionBlocks firstObject];
+        [strongSelf->_askPermissionCompletionBlocks removeObjectAtIndex:0];
+    });
+    return completion;
+}
+
 - (void)askForPermission:(MKONearbyFileRequestOperation *)operation completion:(MKOAskPermissionBlock)completion {
     dispatch_async(dispatch_get_main_queue(), ^{
-        @synchronized (self->_askPermissionCompletionBlocks) {
-            [self->_askPermissionCompletionBlocks addObject:completion];
-        }
+        [self enqueuePermissionCompletionBlock:completion];
         NSString *message = [NSString stringWithFormat:@"%@ would like to download\n%@\nfrom your device.", operation.remotePeer, operation.fileUUID];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Upload File" message:message delegate:self cancelButtonTitle:@"Don't allow" otherButtonTitles:@"Allow", nil];
         [alert show];
@@ -720,12 +756,9 @@ static NSUInteger const kOperationCancelled                 = 997;
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     #pragma unused(alertView)
-    @synchronized(_askPermissionCompletionBlocks) {
-        MKOAskPermissionBlock completion = [_askPermissionCompletionBlocks firstObject];
-        [_askPermissionCompletionBlocks removeObjectAtIndex:0];
-        completion(buttonIndex == 1);
-        completion = nil;
-    }
+    MKOAskPermissionBlock completion = [self dequeuePermissionCompletionBlock];
+    completion(buttonIndex == 1);
+    completion = nil;
 }
 
 - (MKONearbyFileRequestOperation *)currentDownloadOperation {
