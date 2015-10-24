@@ -22,6 +22,7 @@
 // THE SOFTWARE.
 
 #import "MKONearbyFileRequest.h"
+#import "UIAlertController+MKO.h"
 #import <MultipeerConnectivity/MultipeerConnectivity.h>
 
 #if NFR_ENABLE_LOGGING != 0
@@ -726,39 +727,27 @@ static NSUInteger const kOperationCancelled                 = 997;
 
 #pragma mark - Helper Methods
 
-- (void)enqueuePermissionCompletionBlock:(MKOAskPermissionBlock)block {
-    __weak __typeof__(self) weakSelf = self;
-    dispatch_barrier_sync(_askPermissionCompletionBlocksAccessQueue, ^{
-        __typeof__(self) strongSelf = weakSelf;
-        [strongSelf->_askPermissionCompletionBlocks addObject:block];
-    });
-}
-
-- (MKOAskPermissionBlock)dequeuePermissionCompletionBlock {
-    __block MKOAskPermissionBlock completion;
-    __weak __typeof__(self) weakSelf = self;
-    dispatch_barrier_sync(_askPermissionCompletionBlocksAccessQueue, ^{
-        __typeof__(self) strongSelf = weakSelf;
-        completion = [strongSelf->_askPermissionCompletionBlocks firstObject];
-        [strongSelf->_askPermissionCompletionBlocks removeObjectAtIndex:0];
-    });
-    return completion;
-}
-
 - (void)askForPermission:(MKONearbyFileRequestOperation *)operation completion:(MKOAskPermissionBlock)completion {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self enqueuePermissionCompletionBlock:completion];
+    dispatch_async(dispatch_get_main_queue(), ^{        
         NSString *message = [NSString stringWithFormat:@"%@ would like to download\n%@\nfrom your device.", operation.remotePeer, operation.fileUUID];
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Upload File" message:message delegate:self cancelButtonTitle:@"Don't allow" otherButtonTitles:@"Allow", nil];
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Upload File"
+                                                                       message:message
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"Don't allow" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
+            #pragma unused(action)
+            if (completion) completion(NO);
+        }];
+        
+        UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Allow" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+            #pragma unused(action)
+            if (completion) completion(YES);
+        }];
+        
+        [alert addAction:cancelAction];
+        [alert addAction:defaultAction];
         [alert show];
     });
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    #pragma unused(alertView)
-    MKOAskPermissionBlock completion = [self dequeuePermissionCompletionBlock];
-    completion(buttonIndex == 1);
-    completion = nil;
 }
 
 - (MKONearbyFileRequestOperation *)currentDownloadOperation {

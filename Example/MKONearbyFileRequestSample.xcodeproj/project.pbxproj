@@ -16,6 +16,7 @@
 		BFD0EC031AB88F0800DA7424 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BFD0EC011AB88F0800DA7424 /* LaunchScreen.xib */; };
 		BFD0EC1F1AB88FDD00DA7424 /* MKONearbyFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */; };
 		BFD0EC201AB88FDD00DA7424 /* MKOBundleFileLocator.m in Sources */ = {isa = PBXBuildFile; fileRef = BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */; };
+		BFF872041BDB9A6B00F36139 /* UIAlertController+MKO.m in Sources */ = {isa = PBXBuildFile; fileRef = BFF872031BDB9A6B00F36139 /* UIAlertController+MKO.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,8 @@
 		BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKONearbyFileRequest.m; sourceTree = "<group>"; };
 		BFD0EC1D1AB88FDD00DA7424 /* MKOBundleFileLocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKOBundleFileLocator.h; sourceTree = "<group>"; };
 		BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKOBundleFileLocator.m; sourceTree = "<group>"; };
+		BFF872021BDB9A6B00F36139 /* UIAlertController+MKO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIAlertController+MKO.h"; sourceTree = "<group>"; };
+		BFF872031BDB9A6B00F36139 /* UIAlertController+MKO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIAlertController+MKO.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +111,8 @@
 				BFD0EC1E1AB88FDD00DA7424 /* MKOBundleFileLocator.m */,
 				BFD0EC1B1AB88FDD00DA7424 /* MKONearbyFileRequest.h */,
 				BFD0EC1C1AB88FDD00DA7424 /* MKONearbyFileRequest.m */,
+				BFF872021BDB9A6B00F36139 /* UIAlertController+MKO.h */,
+				BFF872031BDB9A6B00F36139 /* UIAlertController+MKO.m */,
 			);
 			name = MKONearbyFileRequest;
 			path = ../../MKONearbyFileRequest;
@@ -139,7 +144,7 @@
 		BFD0EBE71AB88F0800DA7424 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0620;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "Mathias Koehnke";
 				TargetAttributes = {
 					BFD0EBEE1AB88F0800DA7424 = {
@@ -184,6 +189,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFF872041BDB9A6B00F36139 /* UIAlertController+MKO.m in Sources */,
 				BFD0EC201AB88FDD00DA7424 /* MKOBundleFileLocator.m in Sources */,
 				BFD0EBFB1AB88F0800DA7424 /* ViewController.m in Sources */,
 				BFD0EBF81AB88F0800DA7424 /* AppDelegate.m in Sources */,
@@ -234,6 +240,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -297,6 +304,7 @@
 				GCC_PREFIX_HEADER = "MKONearbyFileRequestSample/MKONearbyFileRequestSample-prefix.pch";
 				INFOPLIST_FILE = MKONearbyFileRequestSample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "de.mathiaskoehnke.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = (
 					"-Wundef",
@@ -323,6 +331,7 @@
 				GCC_PREFIX_HEADER = "MKONearbyFileRequestSample/MKONearbyFileRequestSample-prefix.pch";
 				INFOPLIST_FILE = MKONearbyFileRequestSample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "de.mathiaskoehnke.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = (
 					"-Wundef",

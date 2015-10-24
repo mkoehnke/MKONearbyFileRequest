@@ -89,7 +89,7 @@ static NSString * const kFileUUID           = @"image-123456789.png";
     [self.progressLabel setHidden:hidden];
     self.progressView.hidden = (hidden) ? YES : self.progressView.hidden;
     self.activityIndicator.hidden = (hidden) ? YES : self.activityIndicator.hidden;
-    self.imageView.alpha = hidden ? 1. : .3;
+    self.imageView.alpha = (hidden) ? (CGFloat)1.0 : (CGFloat)0.3;
 }
 
 - (void)setProgressIndeterminate:(BOOL)indeterminate {
